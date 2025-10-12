@@ -22,7 +22,7 @@ const fetcher = async (url: string) => {
   return res.json()
 }
 
-export function PendingMembersTable({ initial }: { initial: PendingMember[] }) {
+export function PendingMembersTable({ initial = [] }: { initial?: PendingMember[] }) {
   const { toast } = useToast()
   const { data, mutate, isValidating } = useSWR<{ items: PendingMember[] }>("/api/admin/pending-members", fetcher, {
     fallbackData: { items: initial },
