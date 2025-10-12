@@ -16,11 +16,12 @@ export default function JoinPage() {
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
+    const form = e.currentTarget // keep a stable reference to avoid null after await
     setSubmitting(true)
     setMessage(null)
     setError(null)
 
-    const formData = new FormData(e.currentTarget)
+    const formData = new FormData(form)
     const name = String(formData.get("name") || "").trim()
     const phone = String(formData.get("phone") || "").trim()
     const email = String(formData.get("email") || "").trim()
@@ -36,8 +37,9 @@ export default function JoinPage() {
       if (!res.ok) {
         throw new Error(data?.error || "Failed to submit")
       }
+
+      form.reset() // safely reset using stored reference
       setMessage("Your request has been received. The Jamath will review and contact you, in shaa Allah.")
-      e.currentTarget.reset()
     } catch (err: any) {
       setError(err?.message || "Something went wrong")
     } finally {
