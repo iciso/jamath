@@ -19,9 +19,14 @@ export async function POST(req: Request) {
     const password_hash = await bcrypt.hash(password, 10)
 
     // Try insert
+    const adminCount = await sql<{ count: number }[]>`
+      select count(*)::int as count from users where role = 'admin'
+    `
+    const role = (adminCount[0]?.count ?? 0) === 0 ? "admin" : "member"
+
     const rows = await sql<{ id: string }[]>`
-        insert into users (email, name, password_hash)
-        values (${normalizedEmail}, ${name ?? null}, ${password_hash})
+        insert into users (email, name, password_hash, role)
+        values (${normalizedEmail}, ${name ?? null}, ${password_hash}, ${role})
         on conflict (email) do nothing
         returning id
       `
