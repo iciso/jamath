@@ -9,7 +9,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 export default function SignInPage() {
   const router = useRouter()
   const params = useSearchParams()
-  const callbackUrl = params.get("callbackUrl") || "/"
+  const callbackUrl = params.get("callbackUrl") || "/profile"
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
