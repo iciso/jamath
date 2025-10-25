@@ -97,7 +97,7 @@ export default function HomePage() {
               <CardTitle className="text-base">Zakat & Sadaqah</CardTitle>
             </CardHeader>
             <CardContent className="text-sm text-muted-foreground">
-              Manage donations and distributions transparently. (Coming soon) May Allah reward you for your support
+              Manage donations and distributions transparently. (Coming soon) May Allah SWT reward you for your support
             </CardContent>
           </Card>
         </div>
@@ -107,6 +107,9 @@ export default function HomePage() {
         <div className="mx-auto max-w-5xl px-4 py-6 text-sm text-muted-foreground">
           © {new Date().getFullYear()} Manacaud Valiyapally Muslim Hanafi Jamath — Wakf Board Reg No. 3721/RA - TC
           41/2125, KRA-35 A, Kalipankulam, Trivandrum 695009.
+        </div>
+         <div className="mx-auto max-w-5xl px-4 py-6 text-sm text-muted-foreground">
+          President: Sherief,  Secretary: Althaf Ali,  Treasurer: Riyaz.
         </div>
       </footer>
     </main>
