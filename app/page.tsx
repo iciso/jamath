@@ -20,6 +20,11 @@ export default function HomePage() {
             <Link href="/terms" className="text-sm hover:underline">
               Terms
             </Link>
+            <Link href="/auth/signin">
+              <Button variant="outline" size="sm">
+                Sign In
+              </Button>
+            </Link>
             <Link href="/join">
               <Button size="sm" className="bg-primary text-primary-foreground">
                 Join
@@ -45,6 +50,9 @@ export default function HomePage() {
                 <Link href="/join">
                   <Button className="bg-primary text-primary-foreground">Become a Member</Button>
                 </Link>
+                <Link href="/auth/signin">
+                  <Button variant="outline">Sign In</Button>
+                </Link>
                 <Link href="/terms">
                   <Button variant="outline">Read Terms</Button>
                 </Link>
@@ -54,7 +62,7 @@ export default function HomePage() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Today’s Prayer Times</CardTitle>
+              <CardTitle>Today's Prayer Times</CardTitle>
             </CardHeader>
             <CardContent>
               <PrayerTimes />
@@ -89,8 +97,7 @@ export default function HomePage() {
               <CardTitle className="text-base">Zakat & Sadaqah</CardTitle>
             </CardHeader>
             <CardContent className="text-sm text-muted-foreground">
-              Manage donations and distributions transparently. (Coming soon)  
-              May Allah reward you for your support
+              Manage donations and distributions transparently. (Coming soon) May Allah reward you for your support
             </CardContent>
           </Card>
         </div>
@@ -98,7 +105,8 @@ export default function HomePage() {
 
       <footer className="border-t">
         <div className="mx-auto max-w-5xl px-4 py-6 text-sm text-muted-foreground">
-          © {new Date().getFullYear()} Manacaud Valiyapally Muslim Hanafi Jamath — Wakf Board Reg No. 3721/RA - TC 41/2125, KRA-35 A, Kalipankulam, Trivandrum 695009.
+          © {new Date().getFullYear()} Manacaud Valiyapally Muslim Hanafi Jamath — Wakf Board Reg No. 3721/RA - TC
+          41/2125, KRA-35 A, Kalipankulam, Trivandrum 695009.
         </div>
       </footer>
     </main>
