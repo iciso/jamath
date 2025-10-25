@@ -26,7 +26,35 @@ export default async function ProfilePage() {
     limit 1
   `
 
-  const profile = profiles[0]
+  let profile = profiles[0]
+
+  if (!profile) {
+    try {
+      const newProfiles = await sql<
+        { id: string; name: string; email: string | null; phone: string | null; gender: string; is_active: boolean }[]
+      >`
+        insert into profiles (name, email, gender)
+        values (${session.user.name || session.user.email}, ${session.user.email}, 'male')
+        returning id, name, email, phone, gender, is_active
+      `
+      profile = newProfiles[0]
+    } catch (err) {
+      console.log("[v0] Profile creation error:", (err as Error)?.message)
+      // If profile creation fails, show error message
+      return (
+        <main className="min-h-screen bg-background p-4">
+          <div className="mx-auto max-w-2xl">
+            <div className="rounded-lg border border-border bg-card p-6 text-center">
+              <h1 className="text-2xl font-bold text-foreground">Error</h1>
+              <p className="mt-2 text-muted-foreground">
+                Unable to create your profile. Please contact the Jamath administrator.
+              </p>
+            </div>
+          </div>
+        </main>
+      )
+    }
+  }
 
   if (!profile) {
     return (
