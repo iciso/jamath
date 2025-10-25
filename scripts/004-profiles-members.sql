@@ -1,4 +1,4 @@
--- add profiles and members tables to enrich approvals
+-- add profiles and members tables to reflect approvals beyond pending_members
 
 create extension if not exists pgcrypto;
 

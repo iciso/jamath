@@ -15,10 +15,10 @@ export async function POST(req: Request) {
 
     const sql = getSql()
 
-    // Insert into pending_members
+    // Insert into approved_members
     try {
       await sql /* sql */`
-        INSERT INTO pending_members (name, phone, email, gender)
+        INSERT INTO approved_members (name, phone, email, gender)
         VALUES (${name}, ${phone}, ${email}, ${normalizedGender})
       `
     } catch (e: any) {
