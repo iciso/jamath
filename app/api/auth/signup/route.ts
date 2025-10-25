@@ -35,6 +35,12 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Email already registered" }, { status: 409 })
     }
 
+    await sql`
+      insert into profiles (name, email)
+      values (${name ?? null}, ${normalizedEmail})
+      on conflict (email) do nothing
+    `
+
     return NextResponse.json({ ok: true, userId: rows[0].id })
   } catch (err: any) {
     console.error("[v0] signup error:", err?.message)
