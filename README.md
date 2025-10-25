@@ -16,7 +16,7 @@
 13.	System for messaging every registered user  
 14.	Services for members marrying outside Islam
 15.	Unique branding of the Masjid
-16.	Method for displaying to the community financial and account statements of the Masjid, including but not limited to Jamath’s assets, Audit reports, cash collections, special Income Generation Drives.
+16.	Method for displaying to the community financial and account statements of the Masjid, including but not limited to Jamath’s assets, Audit reports, cash collections, special Income Generation Drives, special events or festivals like the two Eids and Fasting month of Ramadan.
 17.	System for collecting Member’s Subscriptions 
 18.	Provision for “Transferring out” when a female member gets married and joins her husband's Jamath
 19.	Medical Education aid 

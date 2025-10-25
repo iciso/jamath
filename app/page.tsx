@@ -12,7 +12,7 @@ export default function HomePage() {
           <div className="flex items-center gap-2">
             <div aria-hidden className="size-8 rounded-md bg-primary" />
             <div>
-              <p className="font-semibold text-balance">Al Masjid Jamath</p>
+              <p className="font-semibold text-balance">Manacaud Valiyapally Muslim Hanafi Jamath</p>
               <p className="text-muted-foreground text-xs">Community & Services</p>
             </div>
           </div>
@@ -89,7 +89,8 @@ export default function HomePage() {
               <CardTitle className="text-base">Zakat & Sadaqah</CardTitle>
             </CardHeader>
             <CardContent className="text-sm text-muted-foreground">
-              Manage donations and distributions transparently. (Coming soon)
+              Manage donations and distributions transparently. (Coming soon)  
+              May Allah reward you for your support
             </CardContent>
           </Card>
         </div>
@@ -97,7 +98,7 @@ export default function HomePage() {
 
       <footer className="border-t">
         <div className="mx-auto max-w-5xl px-4 py-6 text-sm text-muted-foreground">
-          © {new Date().getFullYear()} Al Masjid Jamath — May Allah reward you for your support.
+          © {new Date().getFullYear()} Manacaud Valiyapally Muslim Hanafi Jamath — Wakf Board Reg No. 3721/RA - TC 41/2125, KRA-35 A, Kalipankulam, Trivandrum 695009.
         </div>
       </footer>
     </main>
