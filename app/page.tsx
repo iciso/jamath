@@ -104,7 +104,7 @@ export default function HomePage() {
       </section>
 
       <footer className="border-t">
-        <div className="mx-auto max-w-5xl px-4 py-6 text-sm text-muted-foreground whitespace-pre-line">
+        <div className="mx-auto max-w-5xl px-4 py-6 text-sm text-muted-foreground text-center whitespace-pre-line">
     © {new Date().getFullYear()} Manacaud Valiyapally Muslim Hanafi Jamath — Wakf Board Reg No. 3721/RA - TC
     41/2125, KRA-35 A, Kalipankulam, Trivandrum 695009.{'\n'}
     President: Sherief,  Secretary: Althaf Ali,  Treasurer: Riyaz.
