@@ -16,6 +16,21 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Password must be at least 8 characters" }, { status: 400 })
     }
 
+    const approvedCheck = await sql<{ id: string }[]>`
+      select id from approved_members 
+      where email = ${normalizedEmail} and review_status = 'approved'
+      limit 1
+    `
+
+    if (!approvedCheck[0]) {
+      return NextResponse.json(
+        {
+          error: "You must be approved by the Jamath administrator before signing up. Please wait for approval.",
+        },
+        { status: 403 },
+      )
+    }
+
     const password_hash = await bcrypt.hash(password, 10)
 
     // Try insert
