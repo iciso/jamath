@@ -16,6 +16,21 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Password must be at least 8 characters" }, { status: 400 })
     }
 
+    const pendingCheck = await sql<{ id: string }[]>`
+      select id from pending_requests 
+      where email = ${normalizedEmail}
+      limit 1
+    `
+
+    if (!pendingCheck[0]) {
+      return NextResponse.json(
+        {
+          error: "Please submit a join request first before signing up.",
+        },
+        { status: 403 },
+      )
+    }
+
     const approvedCheck = await sql<{ id: string }[]>`
       select id from approved_members 
       where email = ${normalizedEmail} and review_status = 'approved'

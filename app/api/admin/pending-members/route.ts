@@ -14,8 +14,7 @@ export async function GET() {
     { id: string; name: string; phone: string; email: string | null; gender: "male" | "female"; created_at: string }[]
   >`
     select id, name, phone, email, gender, created_at
-    from approved_members
-    where review_status = 'pending'
+    from pending_requests
     order by created_at asc
   `
 

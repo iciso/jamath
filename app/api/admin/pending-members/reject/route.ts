@@ -16,12 +16,8 @@ export async function POST(req: Request) {
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 })
 
   await sql`
-    update approved_members
-    set review_status = 'rejected',
-        reviewed_by = ${userId},
-        reviewed_at = now(),
-        notes = coalesce(${notes ?? null}, notes)
-    where id = ${id} and review_status = 'pending'
+    delete from pending_requests
+    where id = ${id}
   `
 
   return NextResponse.json({ ok: true })
