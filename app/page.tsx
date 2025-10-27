@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import PrayerTimes from "@/components/prayer-times"
+import { AuthButton } from "@/components/auth-button"
 
 export default function HomePage() {
   return (
@@ -20,11 +21,7 @@ export default function HomePage() {
             <Link href="/terms" className="text-sm hover:underline">
               Terms
             </Link>
-            <Link href="/auth/signin">
-              <Button variant="outline" size="sm">
-                Sign In
-              </Button>
-            </Link>
+            <AuthButton />
             <Link href="/join">
               <Button size="sm" className="bg-primary text-primary-foreground">
                 Join
@@ -50,9 +47,7 @@ export default function HomePage() {
                 <Link href="/join">
                   <Button className="bg-primary text-primary-foreground">Become a Member</Button>
                 </Link>
-                <Link href="/auth/signin">
-                  <Button variant="outline">Sign In</Button>
-                </Link>
+                <AuthButton />
                 <Link href="/terms">
                   <Button variant="outline">Read Terms</Button>
                 </Link>
@@ -105,10 +100,10 @@ export default function HomePage() {
 
       <footer className="border-t">
         <div className="mx-auto max-w-5xl px-4 py-6 text-sm text-muted-foreground text-center whitespace-pre-line">
-    © {new Date().getFullYear()} Manacaud Valiyapally Muslim Hanafi Jamath — Wakf Board Reg No. 3721/RA - TC
-    41/2125, KRA-35 A, Kalipankulam, Trivandrum 695009.{'\n'}
-    President: Sherief,  Secretary: Althaf Ali,  Treasurer: Riyaz.
-  </div>
+          © {new Date().getFullYear()} Manacaud Valiyapally Muslim Hanafi Jamath — Wakf Board Reg No. 3721/RA - TC
+          41/2125, KRA-35 A, Kalipankulam, Trivandrum 695009.{"\n"}
+          President: Sherief, Secretary: Althaf Ali, Treasurer: Riyaz.
+        </div>
       </footer>
     </main>
   )
