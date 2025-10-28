@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Building2 } from 'lucide-react';
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import PrayerTimes from "@/components/prayer-times"
@@ -10,8 +11,10 @@ export default function HomePage() {
     <main className="min-h-dvh">
       <header className="w-full border-b">
         <div className="mx-auto max-w-5xl px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div aria-hidden className="size-8 rounded-md bg-primary" />
+          <div className="flex items-center gap-3">
+            <div className="flex size-10 items-center justify-center rounded-lg bg-green-600 text-white shadow-sm">
+              <Building2 className="size-6" />
+            </div>
             <div>
               <p className="font-semibold text-balance">Manacaud Valiyapally Muslim Hanafi Jamath</p>
               <p className="text-muted-foreground text-xs">Community & Services</p>
