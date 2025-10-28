@@ -153,11 +153,25 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* === FOOTER === */}
+      {/* === FOOTER ===   */}
       <footer className="border-t bg-green-50/50">
         <div className="mx-auto max-w-5xl px-4 py-6 text-center">
           <p className="text-sm text-green-700 font-medium">
-            © {new Date().getFullYear()} Manacaud Valiyapally Muslim Hanafi Jamath
+            © {new Date().getFullYear()} 
+            
+            <span>
+            {" "}
+            <a
+              href="https://manacaudvaliyapally.org/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-700 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 underline"
+            >
+              Manacaud Valiyapally Muslim Hanafi Jamath
+            </a>{" "}
+            at +91 4712455824
+          </span>
+
           </p>
           <p className="text-xs text-muted-foreground mt-1">
             Wakf Board Reg No. 3721/RA - TC 41/2125, KRA-35 A, Kalipankulam, Trivandrum 695009
