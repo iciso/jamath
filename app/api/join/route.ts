@@ -37,6 +37,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ ok: true })
   } catch (err) {
-    return NextResponse.json({ error: "Server error" }, { status: 500 })
+    console.error("[v0] Join API error:", err instanceof Error ? err.message : String(err))
+    return NextResponse.json({ error: "Failed to submit request. Please try again." }, { status: 500 })
   }
 }
