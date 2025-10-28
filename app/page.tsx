@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import PrayerTimes from "@/components/prayer-times"
 import { AuthButton } from "@/components/auth-button"
+import { useRouter } from "next/router"
 
 import { 
   Building2, 
@@ -93,8 +94,10 @@ export default function HomePage() {
               </div>
             </CardHeader>
             <CardContent>
-              <PrayerTimes />
-              <p className="text-xs text-muted-foreground mt-3 italic">
+              const { locale } = useRouter()
+              <PrayerTimes locale={locale as "en" | "ml"} 
+              />
+               <p className="text-xs text-muted-foreground mt-3 italic">
                 Contact the Masjid office if you notice any discrepancy.
               </p>
             </CardContent>
