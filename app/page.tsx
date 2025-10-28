@@ -95,7 +95,7 @@ export default function HomePage() {
             </CardHeader>
             <CardContent>
              <PrayerTimes locale="en" />
-               <p className="text-xs justify-center text-muted-foreground mt-3 italic">
+               <p className="text-xs text-center text-muted-foreground mt-3 italic">
                 Contact the Masjid office if you notice any discrepancy.
               </p>
             </CardContent>
