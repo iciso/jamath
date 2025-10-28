@@ -16,7 +16,7 @@ export default function JoinPage() {
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    const form = e.currentTarget // keep a stable reference to avoid null after await
+    const form = e.currentTarget
     setSubmitting(true)
     setMessage(null)
     setError(null)
@@ -26,19 +26,20 @@ export default function JoinPage() {
     const phone = String(formData.get("phone") || "").trim()
     const email = String(formData.get("email") || "").trim()
     const gender = String(formData.get("gender") || "").trim()
+    const password = String(formData.get("password") || "").trim() // added password field
 
     try {
       const res = await fetch("/api/join", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, phone, email: email || null, gender }),
+        body: JSON.stringify({ name, phone, email: email || null, gender, password }), // include password
       })
       const data = await res.json()
       if (!res.ok) {
         throw new Error(data?.error || "Failed to submit")
       }
 
-      form.reset() // safely reset using stored reference
+      form.reset()
       setMessage("Your request has been received. The Jamath will review and contact you, in shaa Allah.")
     } catch (err: any) {
       setError(err?.message || "Something went wrong")
@@ -83,6 +84,11 @@ export default function JoinPage() {
                 </label>
               </div>
             </fieldset>
+
+            <div className="grid gap-2">
+              <Label htmlFor="password">Password (required)</Label>
+              <Input id="password" name="password" type="password" required placeholder="Choose a secure password" />
+            </div>
 
             <Button type="submit" disabled={submitting} className={cn("bg-primary text-primary-foreground")}>
               {submitting ? "Submitting..." : "Submit request"}

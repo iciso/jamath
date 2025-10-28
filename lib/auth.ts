@@ -21,16 +21,6 @@ export const authOptions: NextAuthOptions = {
       async authorize(creds) {
         if (!creds?.email || !creds?.password) return null
 
-        const approvedCheck = await sql<{ id: string }[]>`
-          select id from approved_members 
-          where email = ${creds.email.toLowerCase()} and review_status = 'approved'
-          limit 1
-        `
-
-        if (!approvedCheck[0]) {
-          return null // User not approved yet
-        }
-
         // Fetch user by email
         const rows = await sql<
           { id: string; email: string; name: string | null; password_hash: string; role: "admin" | "member" }[]

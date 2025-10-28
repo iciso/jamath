@@ -19,7 +19,7 @@ export async function POST(req: Request) {
     with pr as (
       delete from pending_requests
       where id = ${id}
-      returning name, email, phone, gender
+      returning name, email, phone, gender, password_hash
     ),
     ins_approved as (
       insert into approved_members (name, email, phone, gender, review_status, reviewed_by, reviewed_at, notes)
@@ -49,10 +49,23 @@ export async function POST(req: Request) {
       select id from ins_profile
       union all
       select id from existing
+    ),
+    ins_members as (
+      insert into members (profile_id)
+      select id from final_profile
+      on conflict (profile_id) do nothing
+      returning profile_id
+    ),
+    ins_user as (
+      insert into users (email, name, password_hash, role)
+      select email, name, password_hash, 'member'
+      from pr
+      where exists (select 1 from pr)
+        and not exists (select 1 from users where email = (select email from pr))
+      on conflict (email) do nothing
+      returning id
     )
-    insert into members (profile_id)
-    select id from final_profile
-    on conflict (profile_id) do nothing
+    select 1
   `
 
   return NextResponse.json({ ok: true })

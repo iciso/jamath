@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server"
 import { getSql } from "@/lib/db"
+import bcrypt from "bcryptjs"
 
 export async function POST(req: Request) {
   try {
-    const { name, phone, email, gender } = await req.json()
+    const { name, phone, email, gender, password } = await req.json()
 
-    if (!name || !phone || !gender) {
+    if (!name || !phone || !gender || !password) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
     const normalizedGender = String(gender).toLowerCase()
@@ -13,12 +14,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid gender" }, { status: 400 })
     }
 
+    const passwordHash = await bcrypt.hash(password, 10)
+
     const sql = getSql()
 
     try {
       await sql /* sql */`
-        INSERT INTO pending_requests (name, phone, email, gender)
-        VALUES (${name}, ${phone}, ${email}, ${normalizedGender})
+        INSERT INTO pending_requests (name, phone, email, gender, password_hash)
+        VALUES (${name}, ${phone}, ${email}, ${normalizedGender}, ${passwordHash})
       `
     } catch (e: any) {
       // Constraint violation (e.g., unique phone)
