@@ -1,12 +1,7 @@
-import { defineConfig, env } from "prisma/config";
+import "dotenv/config";
+import { defineConfig } from "@prisma/client/runtime";
 
 export default defineConfig({
-  schema: "prisma/schema.prisma",
-  migrations: {
-    path: "prisma/migrations",
-  },
-  engine: "classic",
-  datasource: {
-    url: env("DATABASE_URL"),
-  },
+  datasourceUrl: process.env.DATABASE_URL,
+  binaryTargets: ["native", "debian-openssl-3.0.x"],
 });
