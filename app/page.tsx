@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import IslamicCalendar from "@/components/islamic-calendar"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import PrayerTimes from "@/components/prayer-times"
@@ -108,17 +109,7 @@ export default function HomePage() {
         <div className="grid gap-5 md:grid-cols-3">
           {/* Islamic Calendar */}
           <Card className="group border-green-100 bg-green-50/50 hover:bg-green-50 hover:border-green-300 transition-all">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <div className="flex size-7 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 group-hover:scale-110 transition-transform">
-                  <Calendar className="size-4" />
-                </div>
-                <CardTitle className="text-base text-green-800">Islamic Calendar</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-              View upcoming Islamic months and key dates. <span className="text-green-600 font-medium">(Coming soon)</span>
-            </CardContent>
+            <IslamicCalendar />
           </Card>
 
           {/* Certificates */}
