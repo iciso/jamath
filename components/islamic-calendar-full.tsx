@@ -1,13 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { format } from "date-fns";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface HijriMonth {
   month: string;
   year: string;
-  startDate: string; // e.g., "15 Feb 2026"
+  startDate: string;
   events: string[];
 }
 
@@ -31,34 +30,31 @@ export default function IslamicCalendarFull() {
   useEffect(() => {
     const fetchHijriMonths = async () => {
       try {
-        const today = new Date();
-        const currentYear = today.getFullYear();
-        const hijriResponse = await fetch("https://api.aladhan.com/v1/gToH?date=today");
-        const hijriData = await hijriResponse.json();
-        const currentHijri = hijriData.data.hijri;
-        const currentHijriYear = parseInt(currentHijri.year);
+        // Get current Hijri
+        const todayRes = await fetch("https://api.aladhan.com/v1/gToH?date=today");
+        const todayData = await todayRes.json();
+        const currentHijri = todayData.data.hijri;
+        const currentMonth = parseInt(currentHijri.month.number);
+        const currentYear = parseInt(currentHijri.year);
 
         const calendar: HijriMonth[] = [];
-        let startMonth = parseInt(currentHijri.month.number);
 
         for (let i = 0; i < 12; i++) {
-          const hijriMonth = (startMonth + i - 1 + 12) % 12 + 1;
-          const hijriYear = currentHijriYear + Math.floor((startMonth + i - 2) / 12);
+          const hijriMonth = ((currentMonth + i - 2 + 12) % 12) + 1;
+          const hijriYear = currentYear + Math.floor((currentMonth + i - 2) / 12);
 
           // Fetch 1st of this Hijri month
-          const hToGResponse = await fetch(
-            `https://api.aladhan.com/v1/hToG/1-${hijriMonth}-${hijriYear}`
-          );
-          const hToGData = await hToGResponse.json();
+          const res = await fetch(`https://api.aladhan.com/v1/hToG/1-${hijriMonth}-${hijriYear}`);
+          const data = await res.json();
 
-          if (hToGData.code === 200) {
-            const gregorianDate = hToGData.data.gregorian;
-            const formatted = `${gregorianDate.day} ${gregorianDate.month.en} ${gregorianDate.year}`;
+          if (data.code === 200) {
+            const g = data.data.gregorian;
+            const startDate = `${g.day} ${g.month.en} ${g.year}`;
 
             calendar.push({
               month: hijriMonths[hijriMonth - 1],
               year: `${hijriYear} AH`,
-              startDate: formatted,
+              startDate,
               events: keyEvents[hijriMonth] || [],
             });
           }
@@ -66,14 +62,14 @@ export default function IslamicCalendarFull() {
 
         setMonths(calendar);
       } catch (error) {
-        // Fallback: Show approximate
-        const fallback = hijriMonths.map((m, i) => ({
+        console.error("API Error:", error);
+        // Fallback
+        setMonths(hijriMonths.map((m, i) => ({
           month: m,
           year: "1447 AH",
-          startDate: format(new Date(2025, 9 + i, 20), "d MMM yyyy"),
-          events: keyEvents[i + 1] || [],
-        }));
-        setMonths(fallback);
+          startDate: "Approx",
+          events: [],
+        })));
       } finally {
         setLoading(false);
       }
@@ -100,12 +96,8 @@ export default function IslamicCalendarFull() {
           <CardContent className="p-4">
             <div className="space-y-3">
               <div>
-                <p className="text-lg font-bold text-green-800">
-                  {m.month}
-                </p>
-                <p className="text-sm font-medium text-green-700">
-                  {m.year}
-                </p>
+                <p className="text-lg font-bold text-green-800">{m.month}</p>
+                <p className="text-sm font-medium text-green-700">{m.year}</p>
               </div>
               <p className="text-xs text-muted-foreground border-t pt-2">
                 Starts ≈ {m.startDate}
@@ -113,9 +105,7 @@ export default function IslamicCalendarFull() {
               {m.events.length > 0 && (
                 <div className="space-y-1 pt-2 border-t">
                   {m.events.map((e, j) => (
-                    <p key={j} className="text-xs font-medium text-emerald-700">
-                      ✓ {e}
-                    </p>
+                    <p key={j} className="text-xs font-medium text-emerald-700">✓ {e}</p>
                   ))}
                 </div>
               )}
