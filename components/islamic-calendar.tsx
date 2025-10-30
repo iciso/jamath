@@ -122,6 +122,11 @@ export default function IslamicCalendar() {
         <p className="text-xs text-center text-muted-foreground italic">
           Dates are approximate • Subject to moon sighting
         </p>
+        <div className="mt-2 text-center">
+            <Link href="/calendar" className="text-xs font-medium text-emerald-600 hover:underline">
+            View Full 12-Month Calendar →
+            </Link>
+        </div>
       </CardContent>
     </Card>
   );
