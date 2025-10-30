@@ -108,10 +108,8 @@ export default function HomePage() {
       <section className="mx-auto max-w-5xl px-4 pb-16">
         <div className="grid gap-5 md:grid-cols-3">
           {/* Islamic Calendar */}
-          <Card className="group border-green-100 bg-green-50/50 hover:bg-green-50 hover:border-green-300 transition-all">
             <IslamicCalendar />
-          </Card>
-
+       
           {/* Certificates */}
           <Card className="group border-green-100 bg-green-50/50 hover:bg-green-50 hover:border-green-300 transition-all">
             <CardHeader>
