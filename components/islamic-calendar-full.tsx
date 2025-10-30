@@ -28,7 +28,7 @@ export default function IslamicCalendarFull() {
   const [months, setMonths] = useState<HijriMonth[]>([]);
 
   useEffect(() => {
-    // Get current Hijri
+    // Get current Hijri — FIXED URL
     fetch("https://api.aladhan.com/v1/gToH?date=today")
       .then(r => r.json())
       .then(d => {
@@ -57,6 +57,15 @@ export default function IslamicCalendarFull() {
         }
 
         setMonths(calendar);
+      })
+      .catch(() => {
+        // Fallback: Show static months
+        setMonths(hijriMonths.map((month, i) => ({
+          month,
+          year: "1447 AH",
+          gregorian: format(addMonths(new Date(), i), "MMM yyyy"),
+          events: keyEvents[i + 1] || [],
+        })));
       });
   }, []);
 

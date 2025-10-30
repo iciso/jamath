@@ -2,8 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { format, addYears } from "date-fns";
-import { Calendar, ChevronRight } from "lucide-react";
+import IslamicCalendarFull from "@/components/islamic-calendar-full";
+import { Button } from "@/components/ui/button";
+import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
 
 interface HijriEvent {
   name: string;
