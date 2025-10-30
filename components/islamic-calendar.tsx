@@ -1,4 +1,3 @@
-{/* components/islamic-calendar.tsx */}
 "use client";
 
 import { useEffect, useState } from "react";
