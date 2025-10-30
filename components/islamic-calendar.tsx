@@ -36,7 +36,7 @@ export default function IslamicCalendar() {
 
   useEffect(() => {
     // Fetch real-time Hijri + Gregorian from Aladhan
-    fetch("https://api.aladhan.com/v1/gToH?date=today")
+    fetch("https://api.aladhan.com/v1/hToG/1-${month}-${year}")
       .then(r => r.json())
       .then(d => {
         const h = d.data.hijri;
