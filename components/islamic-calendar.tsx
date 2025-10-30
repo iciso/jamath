@@ -13,7 +13,7 @@ interface HijriEvent {
 }
 
 const hijriEvents: HijriEvent[] = [
-  { name: "Ramadan", hijriMonth: 9, gregorianApprox: "19 Feb 2026" },
+  { name: "Ramadan Begins", hijriMonth: 9, hijriDay: 1, gregorianApprox: "19 Feb 2026" },
   { name: "Eid al-Fitr", hijriMonth: 10, hijriDay: 1, gregorianApprox: "20 Mar 2026" },
   { name: "Dhul-Hijjah", hijriMonth: 12, gregorianApprox: "18 May 2026" },
   { name: "Eid al-Adha", hijriMonth: 12, hijriDay: 10, gregorianApprox: "27 May 2026" },
