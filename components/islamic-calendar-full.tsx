@@ -44,7 +44,7 @@ export default function IslamicCalendarFull() {
           const hijriYear = currentYear + Math.floor((currentMonth + i - 2) / 12);
 
           // Fetch 1st of this Hijri month
-          const res = await fetch(`https://api.aladhan.com/v1/hToG/1-${hijriMonth}-${hijriYear}`);
+          const res = await fetch(`https://api.aladhan.com/v1/hToG/1-${month}-${year}`);
           const data = await res.json();
 
           if (data.code === 200) {
