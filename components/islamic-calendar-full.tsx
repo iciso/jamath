@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { format, addMonths } from "date-fns";
+import { format } from "date-fns";
 import { Card, CardContent } from "@/components/ui/card";
 
 interface HijriMonth {
   month: string;
   year: string;
-  gregorian: string;
+  startDate: string; // e.g., "15 Feb 2026"
   events: string[];
 }
 
@@ -18,56 +18,77 @@ const hijriMonths = [
 ];
 
 const keyEvents: Record<number, string[]> = {
-  9: ["Ramadan Begins (~19 Feb)"],
-  10: ["Eid al-Fitr (~20 Mar)"],
-  12: ["Dhul-Hijjah (~18 May)", "Eid al-Adha (~27 May)"],
-  1: ["Muharram 1448 (~7 Jul)"],
+  9: ["Ramadan Begins"],
+  10: ["Eid al-Fitr"],
+  12: ["Dhul-Hijjah", "Eid al-Adha (~10th)"],
+  1: ["Islamic New Year"],
 };
 
 export default function IslamicCalendarFull() {
   const [months, setMonths] = useState<HijriMonth[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get current Hijri — FIXED URL
-    fetch("https://api.aladhan.com/v1/gToH?date=today")
-      .then(r => r.json())
-      .then(d => {
-        const h = d.data.hijri;
-        const currentMonth = parseInt(h.month.number);
-        const currentYear = parseInt(h.year);
+    const fetchHijriMonths = async () => {
+      try {
+        const today = new Date();
+        const currentYear = today.getFullYear();
+        const hijriResponse = await fetch("https://api.aladhan.com/v1/gToH?date=today");
+        const hijriData = await hijriResponse.json();
+        const currentHijri = hijriData.data.hijri;
+        const currentHijriYear = parseInt(currentHijri.year);
 
         const calendar: HijriMonth[] = [];
+        let startMonth = parseInt(currentHijri.month.number);
 
         for (let i = 0; i < 12; i++) {
-          const monthIdx = (currentMonth + i - 1) % 12;
-          const yearOffset = currentMonth + i > 12 ? 1 : 0;
-          const hijriYear = currentYear + yearOffset;
+          const hijriMonth = (startMonth + i - 1 + 12) % 12 + 1;
+          const hijriYear = currentHijriYear + Math.floor((startMonth + i - 2) / 12);
 
-          const approxGregorian = format(
-            addMonths(new Date(), i),
-            "MMM yyyy"
+          // Fetch 1st of this Hijri month
+          const hToGResponse = await fetch(
+            `https://api.aladhan.com/v1/hToG/1-${hijriMonth}-${hijriYear}`
           );
+          const hToGData = await hToGResponse.json();
 
-          calendar.push({
-            month: hijriMonths[monthIdx],
-            year: `${hijriYear} AH`,
-            gregorian: approxGregorian,
-            events: keyEvents[monthIdx + 1] || [],
-          });
+          if (hToGData.code === 200) {
+            const gregorianDate = hToGData.data.gregorian;
+            const formatted = `${gregorianDate.day} ${gregorianDate.month.en} ${gregorianDate.year}`;
+
+            calendar.push({
+              month: hijriMonths[hijriMonth - 1],
+              year: `${hijriYear} AH`,
+              startDate: formatted,
+              events: keyEvents[hijriMonth] || [],
+            });
+          }
         }
 
         setMonths(calendar);
-      })
-      .catch(() => {
-        // Fallback: Show static months
-        setMonths(hijriMonths.map((month, i) => ({
-          month,
+      } catch (error) {
+        // Fallback: Show approximate
+        const fallback = hijriMonths.map((m, i) => ({
+          month: m,
           year: "1447 AH",
-          gregorian: format(addMonths(new Date(), i), "MMM yyyy"),
+          startDate: format(new Date(2025, 9 + i, 20), "d MMM yyyy"),
           events: keyEvents[i + 1] || [],
-        })));
-      });
+        }));
+        setMonths(fallback);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchHijriMonths();
   }, []);
+
+  if (loading) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-muted-foreground">Loading accurate Hijri dates...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -87,7 +108,7 @@ export default function IslamicCalendarFull() {
                 </p>
               </div>
               <p className="text-xs text-muted-foreground border-t pt-2">
-                ≈ {m.gregorian}
+                Starts ≈ {m.startDate}
               </p>
               {m.events.length > 0 && (
                 <div className="space-y-1 pt-2 border-t">
