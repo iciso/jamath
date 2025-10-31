@@ -8,8 +8,25 @@ interface HijriMonth {
   month: string;
   year: string;
   startDate: string;
+  endDate?: string;
   events: string[];
 }
+
+// YOUR GOLDEN FALLBACK DATA
+const fallbackCalendar = [
+  { hijri_month: "Jumada I 1447", gregorian_range: "October 23, 2025 – November 21, 2025" },
+  { hijri_month: "Jumada II 1447", gregorian_range: "November 22, 2025 – December 21, 2025" },
+  { hijri_month: "Rajab 1447", gregorian_range: "December 22, 2025 – January 20, 2026" },
+  { hijri_month: "Sha'ban 1447", gregorian_range: "January 21, 2026 – February 19, 2026" },
+  { hijri_month: "Ramadan 1447", gregorian_range: "February 20, 2026 – March 20, 2026" },
+  { hijri_month: "Shawwal 1447", gregorian_range: "March 21, 2026 – April 19, 2026" },
+  { hijri_month: "Dhu al-Qa'dah 1447", gregorian_range: "April 20, 2026 – May 19, 2026" },
+  { hijri_month: "Dhu al-Hijjah 1447", gregorian_range: "May 20, 2026 – June 18, 2026" },
+  { hijri_month: "Muharram 1448", gregorian_range: "June 19, 2026 – July 18, 2026" },
+  { hijri_month: "Safar 1448", gregorian_range: "July 19, 2026 – August 17, 2026" },
+  { hijri_month: "Rabi al-Awwal 1448", gregorian_range: "August 18, 2026 – September 16, 2026" },
+  { hijri_month: "Rabi al-Thani 1448", gregorian_range: "September 17, 2026 – October 16, 2026" },
+];
 
 const hijriMonths = [
   "Muharram", "Safar", "Rabi' al-Awwal", "Rabi' al-Thani",
@@ -17,12 +34,12 @@ const hijriMonths = [
   "Ramadan", "Shawwal", "Dhul-Qi'dah", "Dhul-Hijjah"
 ];
 
-const keyEvents: Record<number, string[]> = {
-  1: ["Islamic New Year"],
-  9: ["Ramadan Begins"],
-  10: ["Eid al-Fitr"],
-  12: ["Dhul-Hijjah", "Eid al-Adha (~10th)"],
-  3: ["12th: Mawlid an-Nabi (approx)"],
+const keyEvents: Record<string, string[]> = {
+  "Ramadan 1447": ["Ramadan Begins"],
+  "Shawwal 1447": ["Eid al-Fitr"],
+  "Dhu al-Hijjah 1447": ["Dhul-Hijjah", "Eid al-Adha (~10th)"],
+  "Muharram 1448": ["Islamic New Year"],
+  "Rabi al-Awwal 1448": ["12th: Mawlid an-Nabi (approx)"],
 };
 
 export default function IslamicCalendarFull() {
@@ -30,33 +47,49 @@ export default function IslamicCalendarFull() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchHijriCalendar = async () => {
+    // Step 1: Load fallback immediately
+    const fallbackMonths: HijriMonth[] = fallbackCalendar.map((item) => {
+      const [monthName, year] = item.hijri_month.split(" ");
+      const [start] = item.gregorian_range.split(" – ");
+      return {
+        month: monthName.replace("I", "al-Ula").replace("II", "al-Akhirah"),
+        year: `${year} AH`,
+        startDate: start,
+        events: keyEvents[item.hijri_month] || [],
+      };
+    });
+    setMonths(fallbackMonths);
+    setLoading(false);
+
+    // Step 2: Try API in background
+    const tryLiveUpdate = async () => {
       try {
-        // Step 1: Get current Hijri date
-        const todayRes = await fetch("https://api.aladhan.com/v1/gToH?date=today");
-        if (!todayRes.ok) throw new Error("Network error");
+        const todayRes = await fetch("https://api.aladhan.com/v1/gToH?date=today", {
+          cache: "no-store",
+        });
+        if (!todayRes.ok) return;
+
         const todayData = await todayRes.json();
-        if (todayData.code !== 200) throw new Error("Invalid response");
+        if (todayData.code !== 200) return;
 
         const currentHijri = todayData.data.hijri;
-        const currentMonth = parseInt(currentHijri.month.number, 10); // e.g., 5
-        const currentYear = parseInt(currentHijri.year, 10); // 1447 ← FIXED!
+        const currentMonth = parseInt(currentHijri.month.number, 10);
+        const currentYear = parseInt(currentHijri.year, 10);
 
-        const calendar: HijriMonth[] = [];
+        const liveMonths: HijriMonth[] = [];
 
-        // Start from current month
         for (let i = 0; i < 12; i++) {
           const monthIndex = (currentMonth - 1 + i) % 12;
           const yearOffset = Math.floor((currentMonth - 1 + i) / 12);
           const targetYear = currentYear + yearOffset;
           const targetMonth = monthIndex + 1;
 
-          // CORRECT API: ?day=1&month=5&year=1447
           const res = await fetch(
-            `https://api.aladhan.com/v1/hToG?day=1&month=${targetMonth}&year=${targetYear}`
+            `https://api.aladhan.com/v1/hToG?day=1&month=${targetMonth}&year=${targetYear}`,
+            { cache: "no-store" }
           );
 
-          let startDate = "Approx";
+          let startDate = fallbackMonths[i].startDate;
           if (res.ok) {
             const data = await res.json();
             if (data.code === 200) {
@@ -65,36 +98,21 @@ export default function IslamicCalendarFull() {
             }
           }
 
-          calendar.push({
+          liveMonths.push({
             month: hijriMonths[monthIndex],
             year: `${targetYear} AH`,
             startDate,
-            events: keyEvents[targetMonth] || [],
+            events: keyEvents[`${hijriMonths[monthIndex]} ${targetYear}`] || [],
           });
         }
 
-        setMonths(calendar);
+        setMonths(liveMonths);
       } catch (err) {
-        console.warn("Using fallback calendar:", err);
-        // Fallback: Start from Jumada al-Ula (Oct 2025)
-        const fallbackStarts = [
-          "20 Oct 2025", "19 Nov 2025", "18 Dec 2025", "16 Jan 2026",
-          "15 Feb 2026", "16 Mar 2026", "15 Apr 2026", "14 May 2026",
-          "13 Jun 2026", "13 Jul 2026", "11 Aug 2026", "10 Sep 2026"
-        ];
-        const startIdx = 4; // Jumada al-Ula
-        setMonths(hijriMonths.map((m, i) => ({
-          month: m,
-          year: i < 8 ? "1447 AH" : "1448 AH",
-          startDate: fallbackStarts[(startIdx + i) % 12],
-          events: keyEvents[(startIdx + i) % 12 + 1] || [],
-        })));
-      } finally {
-        setLoading(false);
+        console.log("API failed, using accurate fallback");
       }
     };
 
-    fetchHijriCalendar();
+    tryLiveUpdate();
   }, []);
 
   if (loading) {
