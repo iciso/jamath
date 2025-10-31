@@ -40,7 +40,7 @@ export default function IslamicCalendarFull() {
 
         const currentHijri = todayData.data.hijri;
         const currentMonth = parseInt(currentHijri.month.number, 10); // e.g., 5
-        const currentYear = parseInt(currentKing.year, 10); // 1447
+        const currentYear = parseInt(currentHijri.year, 10); // 1447 ← FIXED!
 
         const calendar: HijriMonth[] = [];
 
@@ -114,7 +114,7 @@ export default function IslamicCalendarFull() {
           className={`
             overflow-hidden border-green-100 bg-white/90 shadow-sm 
             hover:shadow-md transition-all duration-300
-            ${i === 0 ? "ring-2 ring-emerald-400" : ""}
+            ${i === 0 ? "ring-2 ring-emerald-400 shadow-lg" : ""}
             ${m.events.length > 0 ? "ring-1 ring-emerald-200" : ""}
           `}
         >
@@ -124,7 +124,7 @@ export default function IslamicCalendarFull() {
                 <p className="text-lg font-bold text-green-800">{m.month}</p>
                 <p className="text-sm font-medium text-green-700">{m.year}</p>
                 {i === 0 && (
-                  <p className="text-xs font-semibold text-emerald-600">Current Month</p>
+                  <p className="text-xs font-semibold text-emerald-600 mt-1">Current Month</p>
                 )}
               </div>
               <p className="text-xs text-muted-foreground border-t pt-2">
