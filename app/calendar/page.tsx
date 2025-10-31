@@ -1,11 +1,13 @@
+// app/calendar/page.tsx
 import IslamicCalendarFull from "@/components/islamic-calendar-full";
+import LanguageToggle from "@/components/language-toggle";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
-import Link from "next/link";  
+import Link from "next/link";
 
 export const metadata = {
   title: "Islamic Calendar - Manacaud Jamath",
-  description: "12-month Hijri calendar with Gregorian dates and key events",
+  description: "12-month Hijri calendar with Gregorian dates",
 };
 
 export default function CalendarPage() {
@@ -20,12 +22,15 @@ export default function CalendarPage() {
               12-month Hijri calendar with Gregorian dates • Subject to moon sighting
             </p>
           </div>
-          <Link href="/">  
-            <Button variant="ghost" size="sm" className="gap-2">
-              <ChevronLeft className="size-4" />
-              Back to Home
-            </Button>
-          </Link>
+          <div className="flex gap-2">
+            <LanguageToggle />
+            <Link href="/">
+              <Button variant="ghost" size="sm" className="gap-2">
+                <ChevronLeft className="size-4" />
+                Back
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {/* Full Calendar */}

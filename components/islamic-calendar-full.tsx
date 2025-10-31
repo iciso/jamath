@@ -4,6 +4,11 @@ import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 
+const translations = {
+  en: { current: "Current Month", starts: "Starts approximately" },
+  ml: { current: "നിലവിലെ മാസം", starts: "ആരംഭം ≈" },
+};
+
 interface HijriMonth {
   month: string;
   year: string;
@@ -126,41 +131,27 @@ export default function IslamicCalendarFull() {
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      {months.map((m, i) => (
-        <Card
-          key={i}
-          className={`
-            overflow-hidden border-green-100 bg-white/90 shadow-sm 
-            hover:shadow-md transition-all duration-300
-            ${i === 0 ? "ring-2 ring-emerald-400 shadow-lg" : ""}
-            ${m.events.length > 0 ? "ring-1 ring-emerald-200" : ""}
-          `}
-        >
-          <CardContent className="p-4">
-            <div className="space-y-3">
-              <div>
-                <p className="text-lg font-bold text-green-800">{m.month}</p>
-                <p className="text-sm font-medium text-green-700">{m.year}</p>
-                {i === 0 && (
-                  <p className="text-xs font-semibold text-emerald-600 mt-1">Current Month</p>
-                )}
-              </div>
-              <p className="text-xs text-muted-foreground border-t pt-2">
-                Starts approximately {m.startDate}
-              </p>
-              {m.events.length > 0 && (
-                <div className="space-y-1 pt-2 border-t">
-                  {m.events.map((e, j) => (
-                    <p key={j} className="text-xs font-medium text-emerald-700 flex items-center gap-1">
-                      {e}
-                    </p>
-                  ))}
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+     {months.map((m, i) => (
+  <Card key={i} className={...}>
+    <CardContent className="p-4">
+      <div className="space-y-3">
+        <div>
+          <p className="text-lg font-bold text-green-800">{m.month}</p>
+          <p className="text-sm font-medium text-green-700">{m.year}</p>
+          {i === 0 && (
+            <p className="text-xs font-semibold text-emerald-600 mt-1">
+              {lang === "ml" ? "നിലവിലെ മാസം" : "Current Month"}
+            </p>
+          )}
+        </div>
+        <p className="text-xs text-muted-foreground border-t pt-2">
+          {lang === "ml" ? "ആരംഭം ≈" : "Starts approximately"} {m.startDate}
+        </p>
+        {/* Events with translation */}
+      </div>
+    </CardContent>
+  </Card>
+  ))}
     </div>
   );
 }
