@@ -14,8 +14,8 @@ interface HijriMonth {
 
 // YOUR GOLDEN FALLBACK DATA
 const fallbackCalendar = [
-  { hijri_month: "Jumada I 1447", gregorian_range: "October 23, 2025 – November 21, 2025" },
-  { hijri_month: "Jumada II 1447", gregorian_range: "November 22, 2025 – December 21, 2025" },
+  { hijri_month: "Jumada al-Ula 1447", gregorian_range: "October 23, 2025 – November 21, 2025" },
+  { hijri_month: "Jumada al-Akhirah 1447", gregorian_range: "November 22, 2025 – December 21, 2025" },
   { hijri_month: "Rajab 1447", gregorian_range: "December 22, 2025 – January 20, 2026" },
   { hijri_month: "Sha'ban 1447", gregorian_range: "January 21, 2026 – February 19, 2026" },
   { hijri_month: "Ramadan 1447", gregorian_range: "February 20, 2026 – March 20, 2026" },
