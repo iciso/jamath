@@ -25,44 +25,51 @@ const keyEvents: Record<number, string[]> = {
   3: ["12th: Mawlid an-Nabi (approx)"],
 };
 
+// Fallback approximate dates (for offline/error)
+const fallbackDates = [
+  "20 Oct 2025", "19 Nov 2025", "18 Dec 2025", "16 Jan 2026",
+  "15 Feb 2026", "16 Mar 2026", "15 Apr 2026", "14 May 2026",
+  "13 Jun 2026", "13 Jul 2026", "11 Aug 2026", "10 Sep 2026"
+];
+
 export default function IslamicCalendarFull() {
   const [months, setMonths] = useState<HijriMonth[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(false);
 
   useEffect(() => {
-  const fetchHijriCalendar = async () => {
-    try {
-      // Step 1: Get current Hijri date via CORS proxy
-      const todayRes = await fetch(
-        "https://corsproxy.io/?" + encodeURIComponent("https://api.aladhan.com/v1/gToH?date=today")
-      );
-      const todayData = await todayRes.json();
+    const fetchHijriCalendar = async () => {
+      try {
+        // Step 1: Get current Hijri date (NO PROXY!)
+        const todayRes = await fetch("https://api.aladhan.com/v1/gToH?date=today");
+        if (!todayRes.ok) throw new Error("Network error");
 
-      if (todayData.code !== 200) throw new Error("Failed to fetch current date");
+        const todayData = await todayRes.json();
+        if (todayData.code !== 200) throw new Error("Invalid response");
 
-      const currentHijri = todayData.data.hijri;
-      const currentMonth = parseInt(currentHijri.month.number, 10);
-      const currentYear = parseInt(currentHijri.year, 10);
+        const currentHijri = todayData.data.hijri;
+        const currentMonth = parseInt(currentHijri.month.number, 10);
+        const currentYear = parseInt(currentHijri.year, 10);
 
-      const calendar: HijriMonth[] = [];
+        const calendar: HijriMonth[] = [];
 
-      for (let i = 0; i < 12; i++) {
-        const offset = i - 2;
-        const targetMonth = ((currentMonth + offset - 1 + 12) % 12) + 1;
-        const targetYear = currentYear + Math.floor((currentMonth + offset - 1) / 12);
+        for (let i = 0; i < 12; i++) {
+          const offset = i - 2;
+          const targetMonth = ((currentMonth + offset - 1 + 12) % 12) + 1;
+          const targetYear = currentYear + Math.floor((currentMonth + offset - 1) / 12);
 
-        // Step 2: Convert 1st of target Hijri month via CORS proxy
-        const res = await fetch(
-          "https://corsproxy.io/?" + encodeURIComponent(
-            `https://api.aladhan.com/v1/hToG/1/${targetMonth}/${targetYear}`
-          )
-        );
-        const data = await res.json();
+          // Step 2: Convert 1st of target Hijri month (NO PROXY!)
+          const res = await fetch(`https://api.aladhan.com/v1/hToG/1-${targetMonth}-${targetYear}`);
+          if (!res.ok) throw new Error("Network error");
 
-        if (data.code === 200) {
-          const g = data.data.gregorian;
-          const startDate = `${g.day} ${g.month.en} ${g.year}`;
+          const data = await res.json();
+          let startDate = "Approx";
+
+          if (data.code === 200) {
+            const g = data.data.gregorian;
+            startDate = `${g.day} ${g.month.en} ${g.year}`;
+          } else {
+            startDate = fallbackDates[i % 12] || "Approx";
+          }
 
           calendar.push({
             month: hijriMonths[targetMonth - 1],
@@ -71,44 +78,30 @@ export default function IslamicCalendarFull() {
             events: keyEvents[targetMonth] || [],
           });
         }
-      }
 
-      setMonths(calendar);
-      setError(false);
-    } catch (err) {
-      console.error("Hijri Calendar API Error:", err);
-      setError(true);
-      // Fallback remains the same
-      const fallbackYear = 1447;
-      setMonths(
-        hijriMonths.map((m, i) => ({
+        setMonths(calendar);
+      } catch (err) {
+        console.warn("Using fallback calendar:", err);
+        // Fallback: Show approximate
+        setMonths(hijriMonths.map((m, i) => ({
           month: m,
-          year: `${fallbackYear + Math.floor(i / 12)} AH`,
-          startDate: "Approx",
+          year: `1447 AH`,
+          startDate: fallbackDates[i % 12],
           events: keyEvents[i + 1] || [],
-        }))
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
+        })));
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  fetchHijriCalendar();
-}, []);
+    fetchHijriCalendar();
+  }, []);
 
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-12 space-y-3">
         <Loader2 className="size-8 animate-spin text-green-600" />
         <p className="text-sm text-muted-foreground">Loading Hijri Calendar...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="text-center py-8">
-        <p className="text-sm text-red-600">Failed to load dates. Using approximate calendar.</p>
       </div>
     );
   }
