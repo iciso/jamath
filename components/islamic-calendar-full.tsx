@@ -14,32 +14,32 @@ interface HijriMonth {
 
 // YOUR GOLDEN FALLBACK DATA
 const fallbackCalendar = [
-  { hijri_month: "Jumada al-Ula 1447", gregorian_range: "October 23, 2025 – November 21, 2025" },
-  { hijri_month: "Jumada al-Akhirah 1447", gregorian_range: "November 22, 2025 – December 21, 2025" },
+  { hijri_month: "Jumada-al-Ula 1447", gregorian_range: "October 23, 2025 – November 21, 2025" },
+  { hijri_month: "Jumada-al-Akhirah 1447", gregorian_range: "November 22, 2025 – December 21, 2025" },
   { hijri_month: "Rajab 1447", gregorian_range: "December 22, 2025 – January 20, 2026" },
   { hijri_month: "Sha'ban 1447", gregorian_range: "January 21, 2026 – February 19, 2026" },
   { hijri_month: "Ramadan 1447", gregorian_range: "February 20, 2026 – March 20, 2026" },
   { hijri_month: "Shawwal 1447", gregorian_range: "March 21, 2026 – April 19, 2026" },
-  { hijri_month: "Dhu al-Qa'dah 1447", gregorian_range: "April 20, 2026 – May 19, 2026" },
-  { hijri_month: "Dhu al-Hijjah 1447", gregorian_range: "May 20, 2026 – June 18, 2026" },
+  { hijri_month: "Dhu-al-Qa'dah 1447", gregorian_range: "April 20, 2026 – May 19, 2026" },
+  { hijri_month: "Dhu-al-Hijjah 1447", gregorian_range: "May 20, 2026 – June 18, 2026" },
   { hijri_month: "Muharram 1448", gregorian_range: "June 19, 2026 – July 18, 2026" },
   { hijri_month: "Safar 1448", gregorian_range: "July 19, 2026 – August 17, 2026" },
-  { hijri_month: "Rabi al-Awwal 1448", gregorian_range: "August 18, 2026 – September 16, 2026" },
-  { hijri_month: "Rabi al-Thani 1448", gregorian_range: "September 17, 2026 – October 16, 2026" },
+  { hijri_month: "Rabi-al-Awwal 1448", gregorian_range: "August 18, 2026 – September 16, 2026" },
+  { hijri_month: "Rabi-al-Thani 1448", gregorian_range: "September 17, 2026 – October 16, 2026" },
 ];
 
 const hijriMonths = [
-  "Muharram", "Safar", "Rabi' al-Awwal", "Rabi' al-Thani",
-  "Jumada al-Ula", "Jumada al-Akhirah", "Rajab", "Sha'ban",
-  "Ramadan", "Shawwal", "Dhul-Qi'dah", "Dhul-Hijjah"
+  "Muharram", "Safar", "Rabi'-al-Awwal", "Rabi'-al-Thani",
+  "Jumada al-Ula", "Jumada-al-Akhirah", "Rajab", "Sha'ban",
+  "Ramadan", "Shawwal", "Dhul-Qa'dah", "Dhul-Hijjah"
 ];
 
 const keyEvents: Record<string, string[]> = {
   "Ramadan 1447": ["Ramadan Begins"],
   "Shawwal 1447": ["Eid al-Fitr"],
-  "Dhu al-Hijjah 1447": ["Dhul-Hijjah", "Eid al-Adha (~10th)"],
+  "Dhu-al-Hijjah 1447": ["Dhul-Hijjah", "Eid al-Adha (~10th)"],
   "Muharram 1448": ["Islamic New Year"],
-  "Rabi al-Awwal 1448": ["12th: Mawlid an-Nabi (approx)"],
+  "Rabi-al-Awwal 1448": ["12th: Mawlid an-Nabi (approx)"],
 };
 
 export default function IslamicCalendarFull() {
