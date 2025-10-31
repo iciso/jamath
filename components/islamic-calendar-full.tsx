@@ -25,13 +25,6 @@ const keyEvents: Record<number, string[]> = {
   3: ["12th: Mawlid an-Nabi (approx)"],
 };
 
-// Fallback approximate dates (for offline/error)
-const fallbackDates = [
-  "20 Oct 2025", "19 Nov 2025", "18 Dec 2025", "16 Jan 2026",
-  "15 Feb 2026", "16 Mar 2026", "15 Apr 2026", "14 May 2026",
-  "13 Jun 2026", "13 Jul 2026", "11 Aug 2026", "10 Sep 2026"
-];
-
 export default function IslamicCalendarFull() {
   const [months, setMonths] = useState<HijriMonth[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,10 +32,9 @@ export default function IslamicCalendarFull() {
   useEffect(() => {
     const fetchHijriCalendar = async () => {
       try {
-        // Step 1: Get current Hijri date (NO PROXY!)
+        // Step 1: Get current Hijri
         const todayRes = await fetch("https://api.aladhan.com/v1/gToH?date=today");
         if (!todayRes.ok) throw new Error("Network error");
-
         const todayData = await todayRes.json();
         if (todayData.code !== 200) throw new Error("Invalid response");
 
@@ -57,8 +49,10 @@ export default function IslamicCalendarFull() {
           const targetMonth = ((currentMonth + offset - 1 + 12) % 12) + 1;
           const targetYear = currentYear + Math.floor((currentMonth + offset - 1) / 12);
 
-          // Step 2: Convert 1st of target Hijri month (NO PROXY!)
-          const res = await fetch(`https://api.aladhan.com/v1/hToG/1-${targetMonth}-${targetYear}`);
+          // CORRECT URL: 1-month-year with DASHES
+          const res = await fetch(
+            `https://api.aladhan.com/v1/hToG/1-${targetMonth}-${targetYear}`
+          );
           if (!res.ok) throw new Error("Network error");
 
           const data = await res.json();
@@ -67,8 +61,6 @@ export default function IslamicCalendarFull() {
           if (data.code === 200) {
             const g = data.data.gregorian;
             startDate = `${g.day} ${g.month.en} ${g.year}`;
-          } else {
-            startDate = fallbackDates[i % 12] || "Approx";
           }
 
           calendar.push({
@@ -82,11 +74,16 @@ export default function IslamicCalendarFull() {
         setMonths(calendar);
       } catch (err) {
         console.warn("Using fallback calendar:", err);
-        // Fallback: Show approximate
+        // Fallback dates
+        const fallback = [
+          "20 Oct 2025", "19 Nov 2025", "18 Dec 2025", "16 Jan 2026",
+          "15 Feb 2026", "16 Mar 2026", "15 Apr 2026", "14 May 2026",
+          "13 Jun 2026", "13 Jul 2026", "11 Aug 2026", "10 Sep 2026"
+        ];
         setMonths(hijriMonths.map((m, i) => ({
           month: m,
           year: `1447 AH`,
-          startDate: fallbackDates[i % 12],
+          startDate: fallback[i % 12],
           events: keyEvents[i + 1] || [],
         })));
       } finally {
