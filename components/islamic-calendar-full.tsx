@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
 
 interface HijriMonth {
   month: string;
@@ -17,34 +18,43 @@ const hijriMonths = [
 ];
 
 const keyEvents: Record<number, string[]> = {
+  1: ["Islamic New Year"],
   9: ["Ramadan Begins"],
   10: ["Eid al-Fitr"],
   12: ["Dhul-Hijjah", "Eid al-Adha (~10th)"],
-  1: ["Islamic New Year"],
+  3: ["12th: Mawlid an-Nabi (approx)"],
 };
 
 export default function IslamicCalendarFull() {
   const [months, setMonths] = useState<HijriMonth[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
-    const fetchHijriMonths = async () => {
+    const fetchHijriCalendar = async () => {
       try {
-        // Get current Hijri
+        // Step 1: Get current Hijri date
         const todayRes = await fetch("https://api.aladhan.com/v1/gToH?date=today");
         const todayData = await todayRes.json();
+
+        if (todayData.code !== 200) throw new Error("Failed to fetch current date");
+
         const currentHijri = todayData.data.hijri;
-        const currentMonth = parseInt(currentHijri.month.number);
-        const currentYear = parseInt(currentHijri.year);
+        const currentMonth = parseInt(currentHijri.month.number, 10);
+        const currentYear = parseInt(currentHijri.year, 10);
 
         const calendar: HijriMonth[] = [];
 
+        // Generate next 12 months (starting 2 months ago for context)
         for (let i = 0; i < 12; i++) {
-          const hijriMonth = ((currentMonth + i - 2 + 12) % 12) + 1;
-          const hijriYear = currentYear + Math.floor((currentMonth + i - 2) / 12);
+          const offset = i - 2;
+          const targetMonth = ((currentMonth + offset - 1 + 12) % 12) + 1;
+          const targetYear = currentYear + Math.floor((currentMonth + offset - 1) / 12);
 
-          // Fetch 1st of this Hijri month
-          const res = await fetch(`https://api.aladhan.com/v1/hToG/1-${month}-${year}`);
+          // Step 2: Convert 1st of target Hijri month to Gregorian
+          const res = await fetch(
+            `https://api.aladhan.com/v1/hToG/1/${targetMonth}/${targetYear}`
+          );
           const data = await res.json();
 
           if (data.code === 200) {
@@ -52,36 +62,50 @@ export default function IslamicCalendarFull() {
             const startDate = `${g.day} ${g.month.en} ${g.year}`;
 
             calendar.push({
-              month: hijriMonths[hijriMonth - 1],
-              year: `${hijriYear} AH`,
+              month: hijriMonths[targetMonth - 1],
+              year: `${targetYear} AH`,
               startDate,
-              events: keyEvents[hijriMonth] || [],
+              events: keyEvents[targetMonth] || [],
             });
           }
         }
 
         setMonths(calendar);
-      } catch (error) {
-        console.error("API Error:", error);
-        // Fallback
-        setMonths(hijriMonths.map((m, i) => ({
-          month: m,
-          year: "1447 AH",
-          startDate: "Approx",
-          events: [],
-        })));
+        setError(false);
+      } catch (err) {
+        console.error("Hijri Calendar API Error:", err);
+        setError(true);
+        // Fallback: static calendar
+        const fallbackYear = new Date().getFullYear() + 583; // Rough estimate
+        setMonths(
+          hijriMonths.map((m, i) => ({
+            month: m,
+            year: `${Math.floor(fallbackYear / 12) + (i >= 3 ? 1 : 0)} AH`,
+            startDate: "Approx",
+            events: keyEvents[i + 1] || [],
+          }))
+        );
       } finally {
         setLoading(false);
       }
     };
 
-    fetchHijriMonths();
+    fetchHijriCalendar();
   }, []);
 
   if (loading) {
     return (
-      <div className="text-center py-12">
-        <p className="text-muted-foreground">Loading accurate Hijri dates...</p>
+      <div className="flex flex-col items-center justify-center py-12 space-y-3">
+        <Loader2 className="size-8 animate-spin text-green-600" />
+        <p className="text-sm text-muted-foreground">Loading Hijri Calendar...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-8">
+        <p className="text-sm text-red-600">Failed to load dates. Using approximate calendar.</p>
       </div>
     );
   }
@@ -91,7 +115,11 @@ export default function IslamicCalendarFull() {
       {months.map((m, i) => (
         <Card
           key={i}
-          className="overflow-hidden border-green-100 bg-white/80 shadow-sm hover:shadow-md transition-all"
+          className={`
+            overflow-hidden border-green-100 bg-white/90 shadow-sm 
+            hover:shadow-md transition-all duration-300
+            ${m.events.length > 0 ? "ring-1 ring-emerald-200" : ""}
+          `}
         >
           <CardContent className="p-4">
             <div className="space-y-3">
@@ -105,7 +133,9 @@ export default function IslamicCalendarFull() {
               {m.events.length > 0 && (
                 <div className="space-y-1 pt-2 border-t">
                   {m.events.map((e, j) => (
-                    <p key={j} className="text-xs font-medium text-emerald-700">✓ {e}</p>
+                    <p key={j} className="text-xs font-medium text-emerald-700 flex items-center gap-1">
+                      {e}
+                    </p>
                   ))}
                 </div>
               )}
