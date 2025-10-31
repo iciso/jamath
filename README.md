@@ -3,15 +3,15 @@
 *Sample requirements:*
 1.	Conditions & terms for joining a new member 
 2.	Have User authentication, log-in for each member of the community, with each member having their own profile page, where phone number is a must, and e-mail optional, along with ability to chat with members of the same sex.
-3.	Function as the Masjid landing page for those who are not registered members.
+3.	Make a system to register members of a family in one family ID, to be in line with the Masjid Family Register, wherein one page is for one family, and so all members of one family are enetered in one page. 
 4.	Have daily prayer time board,
 5.	Display an Islamic event calendar, 
-6.	Provide custom child, youth, and New Muslim, with basic Islamic learning, and most of this learning must be by gamification, 
+6.	Function as the Masjid landing page for those who are not registered members. 
 7.	Provide a mechanism for applying and procuring birth, marriage, talaq, and death certificates
-8.	Provision for Counselling & Redressal appointments
+8.	System for collecting and distributing zakat and sadaqah
 9.	System for requesting funeral or other help services for those not registered like wayfarers, unknown Muslims
-10.	System by which user can notify Jamath of community issues, family disputes, other community announcements, like Hajj, Umrah to be undertaken by member.
-11.	System for collecting and distributing zakat and sadaqah 
+10.	Provide custom child, youth, and New Muslim, with basic Islamic learning, and most of this learning must be by gamification,
+11.	 Provision for Counselling & Redressal appointments.System by which user can notify Jamath of community issues, family disputes, other community announcements, like Hajj, Umrah to be undertaken by member.
 12.	Section for organizing Islamic and related community or family events, like Ramadan, Tarawih, Eid-ul-Azha, weddings, funerals, or other virtual or face-to-face meeting, 
 13.	System for messaging every registered user  
 14.	Services for members marrying outside Islam
