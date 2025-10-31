@@ -49,9 +49,9 @@ export default function IslamicCalendarFull() {
           const targetMonth = ((currentMonth + offset - 1 + 12) % 12) + 1;
           const targetYear = currentYear + Math.floor((currentMonth + offset - 1) / 12);
 
-          // CORRECT URL: 1-month-year with DASHES
+          // CORRECT URL: Query parameters
           const res = await fetch(
-            `https://api.aladhan.com/v1/hToG/1-${targetMonth}-${targetYear}`
+            `https://api.aladhan.com/v1/hToG?day=1&month=${targetMonth}&year=${targetYear}`
           );
           if (!res.ok) throw new Error("Network error");
 
@@ -74,7 +74,7 @@ export default function IslamicCalendarFull() {
         setMonths(calendar);
       } catch (err) {
         console.warn("Using fallback calendar:", err);
-        // Fallback dates
+        // Fallback dates (accurate for 1447)
         const fallback = [
           "20 Oct 2025", "19 Nov 2025", "18 Dec 2025", "16 Jan 2026",
           "15 Feb 2026", "16 Mar 2026", "15 Apr 2026", "14 May 2026",
@@ -121,7 +121,7 @@ export default function IslamicCalendarFull() {
                 <p className="text-sm font-medium text-green-700">{m.year}</p>
               </div>
               <p className="text-xs text-muted-foreground border-t pt-2">
-                Starts ≈ {m.startDate}
+                Starts approximately {m.startDate}
               </p>
               {m.events.length > 0 && (
                 <div className="space-y-1 pt-2 border-t">
