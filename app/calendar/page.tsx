@@ -1,25 +1,10 @@
 // app/calendar/page.tsx
 import IslamicCalendarFull from "@/components/islamic-calendar-full";
+import LanguageToggle from "@/components/language-toggle";
 import { LanguageProvider } from "@/context/LanguageContext";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, Globe } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
-import { useLanguage } from "@/context/LanguageContext";
-
-function LanguageToggle() {
-  const { lang, setLang } = useLanguage();
-  return (
-    <Button
-      variant="ghost"
-      size="sm"
-      onClick={() => setLang(lang === "en" ? "ml" : "en")}
-      className="gap-2"
-    >
-      <Globe className="size-4" />
-      {lang === "en" ? "മലയാളം" : "English"}
-    </Button>
-  );
-}
 
 export default function CalendarPage() {
   return (

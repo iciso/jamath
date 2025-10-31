@@ -13,6 +13,7 @@ interface HijriMonth {
   events: string[];
 }
 
+// YOUR GOLDEN FALLBACK DATA (exact as you provided)
 const fallbackCalendar = [
   { hijri_month: "Jumada I 1447", gregorian_range: "October 23, 2025 – November 21, 2025" },
   { hijri_month: "Jumada II 1447", gregorian_range: "November 22, 2025 – December 21, 2025" },
@@ -28,33 +29,7 @@ const fallbackCalendar = [
   { hijri_month: "Rabi al-Thani 1448", gregorian_range: "September 17, 2026 – October 16, 2026" },
 ];
 
-const translations = {
-  en: {
-    current: "Current Month",
-    range: "Gregorian Range",
-    events: {
-      "Ramadan Begins": "Ramadan Begins",
-      "Eid al-Fitr": "Eid al-Fitr",
-      "Dhul-Hijjah": "Dhul-Hijjah",
-      "Eid al-Adha (~10th)": "Eid al-Adha (~10th)",
-      "Islamic New Year": "Islamic New Year",
-      "12th: Mawlid an-Nabi (approx)": "12th: Mawlid an-Nabi (approx)",
-    },
-  },
-  ml: {
-    current: "നിലവിലെ മാസം",
-    range: "ഗ്രിഗോറിയൻ റേഞ്ച്",
-    events: {
-      "Ramadan Begins": "റമദാൻ ആരംഭം",
-      "Eid al-Fitr": "ഈദുൽ ഫിത്വർ",
-      "Dhul-Hijjah": "ധുൽ ഹിജ്ജ",
-      "Eid al-Adha (~10th)": "ഈദുൽ അദ്ഹാ (~10)",
-      "Islamic New Year": "ഹിജ്റ പുതുവർഷം",
-      "12th: Mawlid an-Nabi (approx)": "12: മൗലിദ് (ഏകദേശം)",
-    },
-  },
-};
-
+// Malayalam Month Names
 const monthNameML: Record<string, string> = {
   "Jumada I": "ജുമാദൽ ഊല",
   "Jumada II": "ജുമാദൽ ആഖിര",
@@ -70,43 +45,69 @@ const monthNameML: Record<string, string> = {
   "Rabi al-Thani": "റബീഉൽ ആഖിർ",
 };
 
+// Event Translations
+const eventTranslations = {
+  en: {
+    "Ramadan Begins": "Ramadan Begins",
+    "Eid al-Fitr": "Eid al-Fitr",
+    "Dhul-Hijjah": "Dhul-Hijjah",
+    "Eid al-Adha (~10th)": "Eid al-Adha (~10th)",
+    "Islamic New Year": "Islamic New Year",
+    "12th: Mawlid an-Nabi (approx)": "12th: Mawlid an-Nabi (approx)",
+  },
+  ml: {
+    "Ramadan Begins": "റമദാൻ ആരംഭം",
+    "Eid al-Fitr": "ഈദുൽ ഫിത്വർ",
+    "Dhul-Hijjah": "ധുൽ ഹിജ്ജ",
+    "Eid al-Adha (~10th)": "ഈദുൽ അദ്ഹാ (~10)",
+    "Islamic New Year": "ഹിജ്റ പുതുവർഷം",
+    "12th: Mawlid an-Nabi (approx)": "12: മൗലിദ് (ഏകദേശം)",
+  },
+};
+
 export default function IslamicCalendarFull() {
   const { lang } = useLanguage();
   const [months, setMonths] = useState<HijriMonth[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const t = translations[lang];
-
   useEffect(() => {
-    const data = fallbackCalendar.map((item) => {
+    const t = eventTranslations[lang];
+
+    const calendarData: HijriMonth[] = fallbackCalendar.map((item, index) => {
       const [name, year] = item.hijri_month.includes("1447")
         ? [item.hijri_month.replace(" 1447", ""), "1447"]
         : [item.hijri_month.replace(" 1448", ""), "1448"];
 
-      const eventsEN = [
-        ...(name.includes("Ramadan") ? ["Ramadan Begins"] : []),
-        ...(name.includes("Shawwal") ? ["Eid al-Fitr"] : []),
-        ...(name.includes("Dhu al-Hijjah") ? ["Dhul-Hijjah", "Eid al-Adha (~10th)"] : []),
-        ...(name.includes("Muharram") ? ["Islamic New Year"] : []),
-        ...(name.includes("Rabi al-Awwal") ? ["12th: Mawlid an-Nabi (approx)"] : []),
-      ];
+      // Determine events
+      const eventsEN: string[] = [];
+      if (name.includes("Ramadan")) eventsEN.push("Ramadan Begins");
+      if (name.includes("Shawwal")) eventsEN.push("Eid al-Fitr");
+      if (name.includes("Dhu al-Hijjah")) {
+        eventsEN.push("Dhul-Hijjah");
+        eventsEN.push("Eid al-Adha (~10th)");
+      }
+      if (name.includes("Muharram")) eventsEN.push("Islamic New Year");
+      if (name.includes("Rabi al-Awwal")) eventsEN.push("12th: Mawlid an-Nabi (approx)");
 
       return {
-        month: lang === "ml" ? monthNameML[name] || name : name,
+        month: lang === "ml" ? (monthNameML[name] || name) : name,
         year: `${year} AH`,
         startDate: item.gregorian_range,
-        events: eventsEN.map(e => t.events[e as keyof typeof t.events] || e),
+        events: eventsEN.map(e => t[e as keyof typeof t] || e),
       };
     });
-    setMonths(data);
+
+    setMonths(calendarData);
     setLoading(false);
-  }, [lang, t.events]);
+  }, [lang]);
 
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center py-12 space-y-3">
         <Loader2 className="size-8 animate-spin text-green-600" />
-        <p className="text-sm text-muted-foreground">Loading...</p>
+        <p className="text-sm text-muted-foreground">
+          {lang === "ml" ? "കലണ്ടർ ലോഡ് ചെയ്യുന്നു..." : "Loading Hijri Calendar..."}
+        </p>
       </div>
     );
   }
@@ -129,7 +130,9 @@ export default function IslamicCalendarFull() {
                 <p className="text-lg font-bold text-green-800">{m.month}</p>
                 <p className="text-sm font-medium text-green-700">{m.year}</p>
                 {i === 0 && (
-                  <p className="text-xs font-semibold text-emerald-600 mt-1">{t.current}</p>
+                  <p className="text-xs font-semibold text-emerald-600 mt-1">
+                    {lang === "ml" ? "നിലവിലെ മാസം" : "Current Month"}
+                  </p>
                 )}
               </div>
               <p className="text-xs text-muted-foreground border-t pt-2">
@@ -138,7 +141,10 @@ export default function IslamicCalendarFull() {
               {m.events.length > 0 && (
                 <div className="space-y-1 pt-2 border-t">
                   {m.events.map((e, j) => (
-                    <p key={j} className="text-xs font-medium text-emerald-700 flex items-center gap-1">
+                    <p
+                      key={j}
+                      className="text-xs font-medium text-emerald-700 flex items-center gap-1"
+                    >
                       {e}
                     </p>
                   ))}
