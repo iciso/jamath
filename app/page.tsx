@@ -112,7 +112,7 @@ export default function HomePage() {
        
           {/* Certificates */}
             <Link href="/certificates" className="block">
-              <Card className="group border-green-100 bg-green-50/50 hover:bg-green-50 hover:border-green-300 hover:shadow-md transition-all cursor-pointer">
+              <Card className="group border-green-100 bg-green-50/50 hover:bg-green-50 hover:border-green-300 hover:shadow-md transition-all cursor-pointer h-full">
                 <CardHeader>
                   <div className="flex items-center gap-2">
                     <div className="flex size-7 items-center justify-center rounded-full bg-blue-100 text-blue-700 group-hover:scale-110 transition-transform">
@@ -121,9 +121,16 @@ export default function HomePage() {
                     <CardTitle className="text-base text-green-800">Certificates & Letters</CardTitle>
                   </div>
                 </CardHeader>
-                <CardContent className="text-sm text-muted-foreground">
-                  Apply for birth, marriage, talaq, or death certificates.{" "}
-                  <span className="text-emerald-600 font-semibold">Live Now!</span>
+                <CardContent className="text-sm text-muted-foreground flex flex-col justify-between h-full space-y-4">
+                  <p>
+                    Apply for official Jamath documents, including birth registration for newborns, marriage (Nikah) certificates, talaq documentation, and death certificates for Janaza records. All applications are reviewed by the committee within 48 hours for authenticity and compliance with Islamic principles.
+                  </p>
+                  <div className="mt-auto">
+                    <span className="text-emerald-600 font-semibold">Live Now!</span>
+                    <Button variant="outline" size="sm" className="mt-2 w-full border-green-300 text-green-700 hover:bg-green-50">
+                      Apply Now →
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             </Link>
