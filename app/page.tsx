@@ -150,7 +150,7 @@ export default function HomePage() {
                     </div>
                     <div className="flex flex-col items-center gap-1">
                       <div className="flex size-8 items-center justify-center rounded-full bg-gray-200 text-gray-700">
-                        <Cross className="size-5" />
+                        <Target className="size-5" />
                       </div>
                       <p className="text-xs text-center">Death</p>
                     </div>
