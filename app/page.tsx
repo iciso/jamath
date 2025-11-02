@@ -155,6 +155,11 @@ export default function HomePage() {
                       <p className="text-xs text-center">Death</p>
                     </div>
                   </div>
+
+                         <p className="text-muted-foreground leading-relaxed">
+                You can apply for birth registration for newborns, marriage (Nikah) certificates, talaq documentation, and death certificates for Janaza records. All applications are reviewed by the committee within 48 hours for authenticity and compliance with Islamic principles.
+              </p>
+
                   <div className="mt-auto">
                     <span className="text-emerald-600 font-semibold">Live Now!</span>
                     <Button variant="outline" size="sm" className="mt-2 w-full border-green-300 text-green-700 hover:bg-green-50">
