@@ -13,7 +13,11 @@ import {
   Clock7, 
   Calendar, 
   FileDown, 
-  HandCoins 
+  HandCoins,
+  Baby,      
+  Heart,     
+  Scale,     
+  Target      
 } from 'lucide-react';
 
 export default function HomePage() {
