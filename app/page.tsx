@@ -110,7 +110,7 @@ export default function HomePage() {
           {/* Islamic Calendar */}
             <IslamicCalendar />
        
-          {/* Certificates */}
+                        {/* Certificates */}
             <Link href="/certificates" className="block">
               <Card className="group border-green-100 bg-green-50/50 hover:bg-green-50 hover:border-green-300 hover:shadow-md transition-all cursor-pointer h-full">
                 <CardHeader>
@@ -123,8 +123,34 @@ export default function HomePage() {
                 </CardHeader>
                 <CardContent className="text-sm text-muted-foreground flex flex-col justify-between h-full space-y-4">
                   <p>
-                    Apply for official Jamath documents, including birth registration for newborns, marriage (Nikah) certificates, talaq documentation, and death certificates for Janaza records. All applications are reviewed by the committee within 48 hours for authenticity and compliance with Islamic principles.
+                    Apply for official Jamath documents:
                   </p>
+                  <div className="grid grid-cols-4 gap-2 mt-2">
+                    <div className="flex flex-col items-center gap-1">
+                      <div className="flex size-8 items-center justify-center rounded-full bg-blue-100 text-blue-700">
+                        <Baby className="size-5" />
+                      </div>
+                      <p className="text-xs text-center">Birth</p>
+                    </div>
+                    <div className="flex flex-col items-center gap-1">
+                      <div className="flex size-8 items-center justify-center rounded-full bg-pink-100 text-pink-700">
+                        <Heart className="size-5" />
+                      </div>
+                      <p className="text-xs text-center">Nikah</p>
+                    </div>
+                    <div className="flex flex-col items-center gap-1">
+                      <div className="flex size-8 items-center justify-center rounded-full bg-amber-100 text-amber-700">
+                        <Scale className="size-5" />
+                      </div>
+                      <p className="text-xs text-center">Talaq</p>
+                    </div>
+                    <div className="flex flex-col items-center gap-1">
+                      <div className="flex size-8 items-center justify-center rounded-full bg-gray-200 text-gray-700">
+                        <Cross className="size-5" />
+                      </div>
+                      <p className="text-xs text-center">Death</p>
+                    </div>
+                  </div>
                   <div className="mt-auto">
                     <span className="text-emerald-600 font-semibold">Live Now!</span>
                     <Button variant="outline" size="sm" className="mt-2 w-full border-green-300 text-green-700 hover:bg-green-50">
