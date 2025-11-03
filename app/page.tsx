@@ -186,7 +186,7 @@ export default function HomePage() {
                 </CardHeader>
                 <CardContent className="text-sm text-muted-foreground flex flex-col justify-between h-full space-y-4">
                   <p>
-                    Give to Allah a beautiful loan: Quran 2:245 & 57:18
+                    Give to Allah a good loan: Quran 2:245
                   </p>
                   <div className="grid grid-cols-4 gap-2 mt-2">
                     <div className="flex flex-col items-center gap-1">
