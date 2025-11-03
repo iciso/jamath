@@ -1,7 +1,9 @@
+// lib/auth.ts
 import type { NextAuthOptions } from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import { sql } from "@/lib/neon"
 import bcrypt from "bcryptjs"
+import { getSql } from "@/lib/db" // ← Add this import
 
 export const authOptions: NextAuthOptions = {
   pages: {
@@ -21,7 +23,6 @@ export const authOptions: NextAuthOptions = {
       async authorize(creds) {
         if (!creds?.email || !creds?.password) return null
 
-        // Fetch user by email
         const rows = await sql<
           { id: string; email: string; name: string | null; password_hash: string; role: "admin" | "member" }[]
         >`
@@ -49,7 +50,6 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
-        // attach role/id when logging in
         token.id = (user as any).id
         token.role = (user as any).role ?? "member"
       }
@@ -59,6 +59,20 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         ;(session.user as any).id = token.id
         ;(session.user as any).role = token.role ?? "member"
+
+        // ← NEW: Inject profileId from profiles table
+        try {
+          const db = getSql()
+          const [profile] = await db`
+            SELECT id FROM profiles WHERE user_id = ${token.id} LIMIT 1
+          `
+          if (profile) {
+            ;(session.user as any).profileId = profile.id
+          }
+        } catch (err) {
+          console.error("[Auth] Failed to fetch profileId:", err)
+          // Don't break login — just no profileId
+        }
       }
       return session
     },
