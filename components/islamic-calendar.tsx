@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Calendar, ChevronRight } from "lucide-react";
 import Link from "next/link";
@@ -144,7 +145,7 @@ export default function IslamicCalendar() {
         <div className="mt-2 text-center">
           <Link href="/calendar">
             <Button variant="outline" size="sm" className="mt-2 w-full border-green-300 text-green-700 hover:bg-green-50">
-                      View Full 12-Month Calendar →
+                      View 12-Month Calendar →
                     </Button>
           </Link>
         </div>
