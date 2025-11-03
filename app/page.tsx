@@ -199,7 +199,7 @@ export default function HomePage() {
                       <div className="flex size-8 items-center justify-center rounded-full bg-pink-100 text-pink-700">
                         <Beef className="size-5" />
                       </div>
-                      <p className="text-xs text-center">Fi-sabil-illah</p>
+                      <p className="text-xs text-center">Qurbani</p>
                     </div>
                     <div className="flex flex-col items-center gap-1">
                       <div className="flex size-8 items-center justify-center rounded-full bg-amber-100 text-amber-700">
