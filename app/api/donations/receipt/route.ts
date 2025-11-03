@@ -1,13 +1,19 @@
 // app/api/donations/receipt/route.ts
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
-import { sql } from "@/lib/neon" // ← CHANGE: Use same sql as auth
+import { sql } from "@/lib/neon" // ← This is correct IF sql is exported as value
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib"
+
+// === DEBUG MODE: Add this at top to see real error ===
+export const dynamic = 'force-dynamic'
 
 export async function GET(req: Request) {
   try {
+    console.log("[Receipt API] Request received")
+
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
+      console.log("[Receipt] Unauthorized")
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { "Content-Type": "application/json" },
@@ -17,14 +23,17 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url)
     const id = searchParams.get("id")
     if (!id) {
+      console.log("[Receipt] No ID")
       return new Response(JSON.stringify({ error: "ID required" }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
       })
     }
 
-    // ← FIXED: Use `sql` from neon (same as auth)
-    const [donation] = await sql`
+    console.log("[Receipt] Querying donation ID:", id)
+
+    // ← CRITICAL: Use sql() as function if it's a function
+    const rows = await sql`
       SELECT d.*, h.name as head_name, p.name as donor_name
       FROM donations d
       JOIN donation_heads h ON h.id = d.head_id
@@ -32,12 +41,17 @@ export async function GET(req: Request) {
       WHERE d.id = ${id} AND d.status = 'verified'
     `
 
+    const donation = rows[0]
+
     if (!donation) {
+      console.log("[Receipt] Donation not found or not verified")
       return new Response(JSON.stringify({ error: "Not found or not verified" }), {
         status: 404,
         headers: { "Content-Type": "application/json" },
       })
     }
+
+    console.log("[Receipt] Donation found:", donation)
 
     // Generate PDF
     const pdfDoc = await PDFDocument.create()
@@ -115,6 +129,8 @@ export async function GET(req: Request) {
 
     const pdfBytes = await pdfDoc.save()
 
+    console.log("[Receipt] PDF generated, sending...")
+
     return new Response(pdfBytes, {
       status: 200,
       headers: {
@@ -123,10 +139,13 @@ export async function GET(req: Request) {
         "Cache-Control": "no-cache",
       },
     })
-  } catch (err) {
-    console.error("[PDF] Receipt generation failed:", err)
+  } catch (err: any) {
+    console.error("[PDF] FATAL ERROR:", err)
     return new Response(
-      JSON.stringify({ error: "Failed to generate receipt" }),
+      JSON.stringify({ 
+        error: "Failed to generate receipt",
+        details: err.message 
+      }),
       {
         status: 500,
         headers: { "Content-Type": "application/json" },
