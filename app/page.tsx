@@ -216,7 +216,7 @@ export default function HomePage() {
                   </div>
 
                          <p className="text-muted-foreground leading-relaxed">
-                 Give zakat and sadaqah transparently. May Allah SWT reward you for your support. All charities are reviewed by the committee within 2 bank working days to check and synchronize with bank records and with the accounts, before receipts are issued for you to download.
+                 Give zakat and sadaqah transparently. May Allah SWT reward you for your support. All charities are reviewed by the committee within 2 bank working days to check and synchronize our accounts with bank records, before receipts are issued for you to download.
               </p>
 
                   <div className="mt-auto">
