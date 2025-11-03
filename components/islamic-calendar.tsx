@@ -1,12 +1,9 @@
-// components/islamic-calendar.tsx
 "use client";
 
 import { useEffect, useState } from "react";
-import { format, addYears } from "date-fns";
-import IslamicCalendarFull from "@/components/islamic-calendar-full";
-import { Button } from "@/components/ui/button";
-import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
+import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Loader2, Calendar, ChevronRight } from "lucide-react";
 import Link from "next/link";
 
 interface HijriEvent {
@@ -34,47 +31,63 @@ export default function IslamicCalendar() {
   const [hijri, setHijri] = useState<any>(null);
   const [gregorian, setGregorian] = useState<string>("");
   const [upcoming, setUpcoming] = useState<HijriEvent[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch real-time Hijri + Gregorian from Aladhan
-    fetch("https://api.aladhan.com/v1/hToG/1-${month}-${year}")
+    const today = new Date();
+    const dateStr = format(today, "dd-MM-yyyy");
+
+    // Fetch real-time Hijri from Aladhan
+    fetch(`https://api.aladhan.com/v1/gToH/${dateStr}`)
       .then(r => r.json())
       .then(d => {
-        const h = d.data.hijri;
-        setHijri(h);
-        setGregorian(format(new Date(), "d MMMM yyyy"));
+        if (d.code === 200 && d.data?.hijri) {
+          const h = d.data.hijri;
+          setHijri(h);
+          setGregorian(format(today, "d MMMM yyyy"));
 
-        // Find upcoming events
-        const currentMonth = parseInt(h.month.number);
-        const currentDay = h.day;
+          // Calculate upcoming events
+          const currentMonth = parseInt(h.month.number);
+          const currentDay = parseInt(h.day);
 
-        const futureEvents = hijriEvents
-          .map(event => {
-            const isFuture = 
-              event.hijriMonth > currentMonth ||
-              (event.hijriMonth === currentMonth && (event.hijriDay || 1) >= currentDay);
+          const futureEvents = hijriEvents
+            .map(event => {
+              const isFuture =
+                event.hijriMonth > currentMonth ||
+                (event.hijriMonth === currentMonth && (event.hijriDay || 1) >= currentDay);
+              return { ...event, isFuture };
+            })
+            .filter(e => e.isFuture)
+            .slice(0, 3);
 
-            return { ...event, isFuture };
-          })
-          .filter(e => e.isFuture)
-          .slice(0, 3);
-
-        // If none this year, show next year's
-        setUpcoming(futureEvents.length > 0 ? futureEvents : hijriEvents.slice(0, 3));
+          setUpcoming(futureEvents.length > 0 ? futureEvents : []);
+        }
+        setLoading(false);
       })
       .catch(() => {
-        // Fallback
-        const fallback = { day: "8", month: { en: "Jumada al-Ula" }, year: "1447" };
-        setHijri(fallback);
-        setGregorian(format(new Date(), "d MMMM yyyy"));
-        setUpcoming(hijriEvents.slice(0, 3));
+        setLoading(false); // No fallback → show nothing
       });
   }, []);
 
-  if (!hijri) return null;
+  // Show loader while fetching
+  if (loading) {
+    return (
+      <Card className="group border-green-100 bg-green-50/50 hover:bg-green-50 hover:border-green-300 transition-all h-full">
+        <CardContent className="flex flex-col items-center justify-center py-8 space-y-3">
+          <Loader2 className="size-6 animate-spin text-emerald-600" />
+          <p className="text-xs text-muted-foreground">Fetching Hijri date...</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // If no data (API failed), show nothing
+  if (!hijri) {
+    return null;
+  }
 
   return (
-    <Card className="group border-green-100 bg-gradient-to-br from-emerald-50 to-white shadow-sm hover:shadow-md transition-all h-full">
+    <Card className="group border-green-100 bg-green-50/50 hover:bg-green-50 hover:border-green-300 transition-all h-full">
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -87,10 +100,10 @@ export default function IslamicCalendar() {
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Current Date - Dual Calendar */}
-        <div className="text-center p-4 bg-white/80 rounded-lg border border-green-200">
+        {/* Current Hijri Date */}
+        <div className="text-center p-3 bg-white/70 rounded-lg border border-green-200">
           <p className="text-2xl font-bold text-green-800">
-            {hijri.day} {hijri.month?.en || hijriMonthsArabic[parseInt(hijri.month.number) - 1]}
+            {hijri.day} {hijri.month.en}
           </p>
           <p className="text-sm font-medium text-green-700">
             {hijri.year} AH
@@ -101,35 +114,39 @@ export default function IslamicCalendar() {
         </div>
 
         {/* Upcoming Events */}
-        <div className="space-y-2">
-          <p className="text-xs font-semibold text-green-700 uppercase tracking-wider">
-            Upcoming
-          </p>
-          {upcoming.map((event, i) => (
-            <div
-              key={i}
-              className="flex items-center justify-between text-sm p-2 bg-white/60 rounded-md border border-green-100"
-            >
-              <span className="font-medium text-green-800">
-                {event.hijriDay ? `${event.hijriDay} ` : ""}{hijriMonthsArabic[event.hijriMonth - 1]}
-              </span>
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <span className="font-medium text-green-600">
-                  {event.gregorianApprox}
+        {upcoming.length > 0 && (
+          <div className="space-y-2">
+            <p className="text-xs font-semibold text-green-700 uppercase tracking-wider">
+              Upcoming
+            </p>
+            {upcoming.map((event, i) => (
+              <div
+                key={i}
+                className="flex items-center justify-between text-sm p-2 bg-white/50 rounded-md border border-green-100"
+              >
+                <span className="font-medium text-green-800">
+                  {event.name}
                 </span>
-                <ChevronRight className="size-3 text-emerald-600" />
+                <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <span className="font-medium text-green-600">
+                    {event.gregorianApprox}
+                  </span>
+                  <ChevronRight className="size-3 text-emerald-600" />
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
 
         <p className="text-xs text-center text-muted-foreground italic">
           Dates are approximate • Subject to moon sighting
         </p>
         <div className="mt-2 text-center">
-            <Link href="/calendar" className="text-xs font-medium text-emerald-600 hover:underline">
-            View Full 12-Month Calendar →
-            </Link>
+          <Link href="/calendar">
+            <Button variant="outline" size="sm" className="mt-2 w-full border-green-300 text-green-700 hover:bg-green-50">
+                      View Full 12-Month Calendar →
+                    </Button>
+          </Link>
         </div>
       </CardContent>
     </Card>
