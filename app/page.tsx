@@ -9,13 +9,16 @@ import { useLocale } from 'next-intl'
 
 import { 
   Building2, 
+  Beef,
   UsersRound, 
   Clock7, 
   Calendar, 
   FileDown, 
   HandCoins,
+  HandHelping,
   Baby,      
-  Heart,     
+  Heart,
+  ReceiptIndianRupee,     
   Scale,     
   Target      
 } from 'lucide-react';
@@ -171,19 +174,65 @@ export default function HomePage() {
             </Link>
 
           {/* Zakat */}
-          <Card className="group border-green-100 bg-green-50/50 hover:bg-green-50 hover:border-green-300 transition-all">
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <div className="flex size-7 items-center justify-center rounded-full bg-amber-100 text-amber-700 group-hover:scale-110 transition-transform">
-                  <HandCoins className="size-4" />
-                </div>
-                <CardTitle className="text-base text-green-800">Zakat & Sadaqah</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
-              Manage donations and distributions transparently. May Allah SWT reward you for your support. <span className="text-green-600 font-medium">(Coming soon)</span>
-            </CardContent>
-          </Card>
+                   <Link href="/certificates" className="block">
+              <Card className="group border-green-100 bg-green-50/50 hover:bg-green-50 hover:border-green-300 hover:shadow-md transition-all cursor-pointer h-full">
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <div className="flex size-7 items-center justify-center rounded-full bg-blue-100 text-blue-700 group-hover:scale-110 transition-transform">
+                      <FileDown className="size-4" />
+                    </div>
+                    <CardTitle className="text-base text-green-800">Zakat & Sadaqah</CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent className="text-sm text-muted-foreground flex flex-col justify-between h-full space-y-4">
+                  <p>
+                    Give to Allah a beautiful loan: Quran 2:245 & 57:18
+                  </p>
+                  <div className="grid grid-cols-4 gap-2 mt-2">
+                    <div className="flex flex-col items-center gap-1">
+                      <div className="flex size-8 items-center justify-center rounded-full bg-blue-100 text-blue-700">
+                        <HandHelping className="size-5" />
+                      </div>
+                      <p className="text-xs text-center">Zakat</p>
+                    </div>
+                    <div className="flex flex-col items-center gap-1">
+                      <div className="flex size-8 items-center justify-center rounded-full bg-pink-100 text-pink-700">
+                        <Beef className="size-5" />
+                      </div>
+                      <p className="text-xs text-center">Fi-sabil-illah</p>
+                    </div>
+                    <div className="flex flex-col items-center gap-1">
+                      <div className="flex size-8 items-center justify-center rounded-full bg-amber-100 text-amber-700">
+                        <Building2 className="size-5" />
+                      </div>
+                      <p className="text-xs text-center">Masjid</p>
+                    </div>
+                    <div className="flex flex-col items-center gap-1">
+                      <div className="flex size-8 items-center justify-center rounded-full bg-gray-200 text-gray-700">
+                        <ReceiptIndianRupee className="size-5" />
+                      </div>
+                      <p className="text-xs text-center">Events</p>
+                    </div>
+                  </div>
+
+                         <p className="text-muted-foreground leading-relaxed">
+                 Give zakat and sadaqah transparently. May Allah SWT reward you for your support. All charities are reviewed by the committee within 2 bank working days to check and synchronize with bank records and with the accounts, before receipts are issued for you to download.
+              </p>
+
+                  <div className="mt-auto">
+                    <span className="text-emerald-600 font-semibold">Live Now!</span>
+                    <Button variant="outline" size="sm" className="mt-2 w-full border-green-300 text-green-700 hover:bg-green-50">
+                      Donate Now →
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            </Link>
+   
+
+
+
+
         </div>
       </section>
 
