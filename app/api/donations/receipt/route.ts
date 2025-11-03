@@ -1,10 +1,9 @@
 // app/api/donations/receipt/route.ts
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
-import { sql } from "@/lib/neon" // ← This is correct IF sql is exported as value
+import { sql } from "@/lib/neon"
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib"
 
-// === DEBUG MODE: Add this at top to see real error ===
 export const dynamic = 'force-dynamic'
 
 export async function GET(req: Request) {
@@ -13,7 +12,6 @@ export async function GET(req: Request) {
 
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
-      console.log("[Receipt] Unauthorized")
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { "Content-Type": "application/json" },
@@ -23,7 +21,6 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url)
     const id = searchParams.get("id")
     if (!id) {
-      console.log("[Receipt] No ID")
       return new Response(JSON.stringify({ error: "ID required" }), {
         status: 400,
         headers: { "Content-Type": "application/json" },
@@ -32,9 +29,11 @@ export async function GET(req: Request) {
 
     console.log("[Receipt] Querying donation ID:", id)
 
-    // ← CRITICAL: Use sql() as function if it's a function
     const rows = await sql`
-      SELECT d.*, h.name as head_name, p.name as donor_name
+      SELECT 
+        d.*, 
+        h.name as head_name, 
+        p.name as donor_name
       FROM donations d
       JOIN donation_heads h ON h.id = d.head_id
       JOIN profiles p ON p.id = d.profile_id
@@ -44,14 +43,19 @@ export async function GET(req: Request) {
     const donation = rows[0]
 
     if (!donation) {
-      console.log("[Receipt] Donation not found or not verified")
       return new Response(JSON.stringify({ error: "Not found or not verified" }), {
         status: 404,
         headers: { "Content-Type": "application/json" },
       })
     }
 
-    console.log("[Receipt] Donation found:", donation)
+    // ← FINAL FIX: Convert amount to Number
+    const amount = Number(donation.amount)
+    if (isNaN(amount)) {
+      throw new Error("Invalid amount value")
+    }
+
+    console.log("[Receipt] Donation found:", { ...donation, amount })
 
     // Generate PDF
     const pdfDoc = await PDFDocument.create()
@@ -97,7 +101,8 @@ export async function GET(req: Request) {
       font,
     })
 
-    page.drawText(`Amount: ₹${donation.amount.toFixed(2)}`, {
+    // ← Use converted amount
+    page.drawText(`Amount: ₹${amount.toFixed(2)}`, {
       x: 50,
       y: height - 240,
       size: 14,
@@ -129,7 +134,7 @@ export async function GET(req: Request) {
 
     const pdfBytes = await pdfDoc.save()
 
-    console.log("[Receipt] PDF generated, sending...")
+    console.log("[Receipt] PDF generated successfully!")
 
     return new Response(pdfBytes, {
       status: 200,
