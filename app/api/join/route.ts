@@ -10,28 +10,26 @@ export async function POST(req: Request) {
     if (!name || !phone || !gender || !password) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
+
     const normalizedGender = String(gender).toLowerCase()
     if (!["male", "female"].includes(normalizedGender)) {
       return NextResponse.json({ error: "Invalid gender" }, { status: 400 })
     }
 
     const passwordHash = await bcrypt.hash(password, 10)
-
     const sql = getSql()
 
     try {
       await sql /* sql */`
-        INSERT INTO pending_requests (name, phone, email, gender, password_hash)
+        INSERT INTO pending_members (name, phone, email, gender, password_hash)
         VALUES (${name}, ${phone}, ${email}, ${normalizedGender}, ${passwordHash})
       `
     } catch (e: any) {
-      // Constraint violation (e.g., unique phone)
-      if (
-        String(e?.message || "")
-          .toLowerCase()
-          .includes("unique")
-      ) {
-        return NextResponse.json({ error: "This phone number is already submitted" }, { status: 409 })
+      if (String(e?.message || "").toLowerCase().includes("unique")) {
+        return NextResponse.json(
+          { error: "This phone number or email is already submitted" },
+          { status: 409 }
+        )
       }
       throw e
     }
@@ -39,6 +37,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: true })
   } catch (err) {
     console.error("[v0] Join API error:", err instanceof Error ? err.message : String(err))
-    return NextResponse.json({ error: "Failed to submit request. Please try again." }, { status: 500 })
+    return NextResponse.json(
+      { error: "Failed to submit request. Please try again." },
+      { status: 500 }
+    )
   }
 }

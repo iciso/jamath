@@ -1,5 +1,4 @@
 // app/api/admin/pending-members/reject/route.ts
-
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
@@ -18,8 +17,8 @@ export async function POST(req: Request) {
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 })
 
   await sql`
-    delete from pending_requests
-    where id = ${id}
+    DELETE FROM pending_members
+    WHERE id = ${id}
   `
 
   return NextResponse.json({ ok: true })

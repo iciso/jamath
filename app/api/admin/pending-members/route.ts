@@ -1,5 +1,4 @@
 // app/api/admin/pending-members/route.ts
-
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
@@ -15,9 +14,9 @@ export async function GET() {
   const rows = await sql<
     { id: string; name: string; phone: string; email: string | null; gender: "male" | "female"; created_at: string }[]
   >`
-    select id, name, phone, email, gender, created_at
-    from pending_requests
-    order by created_at asc
+    SELECT id, name, phone, email, gender, created_at
+    FROM pending_members
+    ORDER BY created_at ASC
   `
 
   return NextResponse.json({ items: rows })

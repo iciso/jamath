@@ -1,5 +1,4 @@
 // app/api/admin/pending-members/approve/route.ts
-
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
@@ -18,56 +17,56 @@ export async function POST(req: Request) {
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 })
 
   await sql`
-    with pr as (
-      delete from pending_requests
-      where id = ${id}
-      returning name, email, phone, gender, password_hash
+    WITH pr AS (
+      DELETE FROM pending_members
+      WHERE id = ${id}
+      RETURNING name, email, phone, gender, password_hash
     ),
-    ins_approved as (
-      insert into approved_members (name, email, phone, gender, review_status, reviewed_by, reviewed_at, notes)
-      select name, email, phone, gender, 'approved', ${userId}, now(), ${notes ?? null}
-      from pr
-      returning id
+    ins_approved AS (
+      INSERT INTO approved_members (name, email, phone, gender, review_status, reviewed_by, reviewed_at, notes)
+      SELECT name, email, phone, gender, 'approved', ${userId}, NOW(), ${notes ?? null}
+      FROM pr
+      RETURNING id
     ),
-    existing as (
-      select id
-      from profiles
-      where exists (select 1 from pr)
-        and (
-          email is not distinct from (select email from pr)
-          or phone is not distinct from (select phone from pr)
+    existing AS (
+      SELECT id
+      FROM profiles
+      WHERE EXISTS (SELECT 1 FROM pr)
+        AND (
+          email IS NOT DISTINCT FROM (SELECT email FROM pr)
+          OR phone IS NOT DISTINCT FROM (SELECT phone FROM pr)
         )
-      limit 1
+      LIMIT 1
     ),
-    ins_profile as (
-      insert into profiles (name, email, phone, gender)
-      select name, email, phone, gender
-      from pr
-      where exists (select 1 from pr)
-        and not exists (select 1 from existing)
-      returning id
+    ins_profile AS (
+      INSERT INTO profiles (name, email, phone, gender)
+      SELECT name, email, phone, gender
+      FROM pr
+      WHERE EXISTS (SELECT 1 FROM pr)
+        AND NOT EXISTS (SELECT 1 FROM existing)
+      RETURNING id
     ),
-    final_profile as (
-      select id from ins_profile
-      union all
-      select id from existing
+    final_profile AS (
+      SELECT id FROM ins_profile
+      UNION ALL
+      SELECT id FROM existing
     ),
-    ins_members as (
-      insert into members (profile_id)
-      select id from final_profile
-      on conflict (profile_id) do nothing
-      returning profile_id
+    ins_members AS (
+      INSERT INTO members (profile_id)
+      SELECT id FROM final_profile
+      ON CONFLICT (profile_id) DO NOTHING
+      RETURNING profile_id
     ),
-    ins_user as (
-      insert into users (email, name, password_hash, role)
-      select email, name, password_hash, 'member'
-      from pr
-      where exists (select 1 from pr)
-        and not exists (select 1 from users where email = (select email from pr))
-      on conflict (email) do nothing
-      returning id
+    ins_user AS (
+      INSERT INTO users (email, name, password_hash, role)
+      SELECT email, name, password_hash, 'member'
+      FROM pr
+      WHERE EXISTS (SELECT 1 FROM pr)
+        AND NOT EXISTS (SELECT 1 FROM users WHERE email = (SELECT email FROM pr))
+      ON CONFLICT (email) DO NOTHING
+      RETURNING id
     )
-    select 1
+    SELECT 1
   `
 
   return NextResponse.json({ ok: true })
