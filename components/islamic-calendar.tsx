@@ -65,7 +65,7 @@ export default function IslamicCalendar() {
       .catch(() => {
         // Fallback
         const fallback = { day: "8", month: { en: "Jumada al-Ula" }, year: "1447" };
-        setHijri(h);
+        setHijri(fallback);
         setGregorian(format(new Date(), "d MMMM yyyy"));
         setUpcoming(hijriEvents.slice(0, 3));
       });
