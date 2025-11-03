@@ -1,6 +1,6 @@
 // app/api/join/route.ts
 import { NextResponse } from "next/server"
-import { sql } from "@/lib/neon"  // ← Use same as admin routes
+import { sql } from "@/lib/db"  // ← Use our Neon driver
 import bcrypt from "bcryptjs"
 
 export async function POST(req: Request) {
@@ -16,7 +16,14 @@ export async function POST(req: Request) {
       )
     }
 
-    const normalizedGender = String(gender).toLowerCase()
+    if (password.length < 6) {
+      return NextResponse.json(
+        { error: "Password must be 6+ characters" },
+        { status: 400 }
+      )
+    }
+
+    const normalizedGender = gender.toLowerCase()
     if (!["male", "female"].includes(normalizedGender)) {
       return NextResponse.json(
         { error: "Gender must be male or female" },
@@ -24,16 +31,9 @@ export async function POST(req: Request) {
       )
     }
 
-    if (password.length < 6) {
-      return NextResponse.json(
-        { error: "Password must be at least 6 characters" },
-        { status: 400 }
-      )
-    }
-
     const passwordHash = await bcrypt.hash(password, 10)
 
-    // === INSERT INTO pending_members ===
+    // === INSERT ===
     try {
       await sql`
         INSERT INTO pending_members (
@@ -43,20 +43,27 @@ export async function POST(req: Request) {
         )
       `
     } catch (error: any) {
-      console.error("SQL Insert Error:", error)
+      console.error("SQL INSERT FAILED:", error)
 
       const msg = error.message?.toLowerCase() || ""
+
+      if (msg.includes("pending_members") && msg.includes("does not exist")) {
+        return NextResponse.json(
+          { error: "Database table missing. Contact admin." },
+          { status: 500 }
+        )
+      }
 
       if (msg.includes("unique") || msg.includes("duplicate")) {
         if (msg.includes("phone")) {
           return NextResponse.json(
-            { error: "This phone number is already registered" },
+            { error: "Phone number already used" },
             { status: 409 }
           )
         }
         if (msg.includes("email")) {
           return NextResponse.json(
-            { error: "This email is already registered" },
+            { error: "Email already used" },
             { status: 409 }
           )
         }
@@ -74,9 +81,9 @@ export async function POST(req: Request) {
     })
 
   } catch (err: any) {
-    console.error("[JOIN API] Unexpected error:", err)
+    console.error("[JOIN API] Crash:", err)
     return NextResponse.json(
-      { error: "Server error. Please try again later." },
+      { error: "Server error. Please try again." },
       { status: 500 }
     )
   }
