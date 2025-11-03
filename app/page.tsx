@@ -114,9 +114,7 @@ export default function HomePage() {
       {/* === FEATURES SECTION === */}
       <section className="mx-auto max-w-5xl px-4 pb-16">
         <div className="grid gap-5 md:grid-cols-3">
-          {/* Islamic Calendar */}
-            <IslamicCalendar />
-       
+                
                         {/* Certificates */}
             <Link href="/certificates" className="block">
               <Card className="group border-green-100 bg-green-50/50 hover:bg-green-50 hover:border-green-300 hover:shadow-md transition-all cursor-pointer h-full">
@@ -172,6 +170,10 @@ export default function HomePage() {
                 </CardContent>
               </Card>
             </Link>
+
+
+             {/* Islamic Calendar */}
+            <IslamicCalendar />
 
           {/* Zakat */}
                    <Link href="/certificates" className="block">
