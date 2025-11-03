@@ -1,3 +1,4 @@
+// components/islamic-calendar.tsx
 "use client";
 
 import { useEffect, useState } from "react";
@@ -64,7 +65,7 @@ export default function IslamicCalendar() {
       .catch(() => {
         // Fallback
         const fallback = { day: "8", month: { en: "Jumada al-Ula" }, year: "1447" };
-        setHijri(fallback);
+        setHijri(h);
         setGregorian(format(new Date(), "d MMMM yyyy"));
         setUpcoming(hijriEvents.slice(0, 3));
       });
