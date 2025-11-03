@@ -8,8 +8,6 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(req: Request) {
   try {
-    console.log("[Receipt API] Request received")
-
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -27,8 +25,6 @@ export async function GET(req: Request) {
       })
     }
 
-    console.log("[Receipt] Querying donation ID:", id)
-
     const rows = await sql`
       SELECT 
         d.*, 
@@ -41,7 +37,6 @@ export async function GET(req: Request) {
     `
 
     const donation = rows[0]
-
     if (!donation) {
       return new Response(JSON.stringify({ error: "Not found or not verified" }), {
         status: 404,
@@ -49,13 +44,8 @@ export async function GET(req: Request) {
       })
     }
 
-    // ← FINAL FIX: Convert amount to Number
     const amount = Number(donation.amount)
-    if (isNaN(amount)) {
-      throw new Error("Invalid amount value")
-    }
-
-    console.log("[Receipt] Donation found:", { ...donation, amount })
+    if (isNaN(amount)) throw new Error("Invalid amount")
 
     // Generate PDF
     const pdfDoc = await PDFDocument.create()
@@ -101,8 +91,8 @@ export async function GET(req: Request) {
       font,
     })
 
-    // ← Use converted amount
-    page.drawText(`Amount: ₹${amount.toFixed(2)}`, {
+    // ← FINAL FIX: Use "INR" instead of "₹"
+    page.drawText(`Amount: INR ${amount.toFixed(2)}`, {
       x: 50,
       y: height - 240,
       size: 14,
@@ -134,8 +124,6 @@ export async function GET(req: Request) {
 
     const pdfBytes = await pdfDoc.save()
 
-    console.log("[Receipt] PDF generated successfully!")
-
     return new Response(pdfBytes, {
       status: 200,
       headers: {
@@ -145,7 +133,7 @@ export async function GET(req: Request) {
       },
     })
   } catch (err: any) {
-    console.error("[PDF] FATAL ERROR:", err)
+    console.error("[PDF] ERROR:", err)
     return new Response(
       JSON.stringify({ 
         error: "Failed to generate receipt",
