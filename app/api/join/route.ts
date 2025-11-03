@@ -1,3 +1,4 @@
+// app/api/join/route.ts
 import { NextResponse } from "next/server"
 import { getSql } from "@/lib/db"
 import bcrypt from "bcryptjs"
