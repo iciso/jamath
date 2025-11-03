@@ -178,8 +178,8 @@ export default function HomePage() {
               <Card className="group border-green-100 bg-green-50/50 hover:bg-green-50 hover:border-green-300 hover:shadow-md transition-all cursor-pointer h-full">
                 <CardHeader>
                   <div className="flex items-center gap-2">
-                    <div className="flex size-7 items-center justify-center rounded-full bg-blue-100 text-blue-700 group-hover:scale-110 transition-transform">
-                      <FileDown className="size-4" />
+                    <div className="flex size-7 items-center justify-center rounded-full bg-amber-100 text-amber-700 group-hover:scale-110 transition-transform">
+                      <HandCoins className="size-4" />
                     </div>
                     <CardTitle className="text-base text-green-800">Zakat & Sadaqah</CardTitle>
                   </div>
