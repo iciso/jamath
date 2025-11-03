@@ -176,7 +176,7 @@ export default function HomePage() {
             <IslamicCalendar />
 
           {/* Zakat */}
-                   <Link href="/certificates" className="block">
+                   <Link href="/zakat" className="block">
               <Card className="group border-green-100 bg-green-50/50 hover:bg-green-50 hover:border-green-300 hover:shadow-md transition-all cursor-pointer h-full">
                 <CardHeader>
                   <div className="flex items-center gap-2">
