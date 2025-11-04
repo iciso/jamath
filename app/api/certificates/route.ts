@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import { sql } from "@/lib/neon"
+import { getSql } from "@/lib/db"
 
 export async function GET(req: Request) {
   try {
@@ -10,7 +10,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Missing profileId" }, { status: 400 })
     }
 
-    const sql = sql
+    const sql = getSql()
     const certificates = await sql`
       SELECT ca.id, ca.certificate_type, ca.status, ic.certificate_number
       FROM certificate_applications ca

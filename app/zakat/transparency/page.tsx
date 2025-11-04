@@ -2,20 +2,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { sql } from "@/lib/neon" // ← CHANGE: Use sql from neon
+import { sql } from "@/lib/neon"
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts"
 
 export const dynamic = 'force-dynamic'
 
-interface Summary {
-  head_name: string
-  total: string
-  count: number
-}
-
 export default async function TransparencyPage() {
-  // ← Use sql directly
-  const summary: Summary[] = await sql`
+  const summary = await sql`
     SELECT 
       h.name as head_name,
       COALESCE(SUM(d.amount), 0)::text as total,
@@ -46,10 +39,7 @@ export default async function TransparencyPage() {
 
   const chartData = summary
     .filter(s => Number(s.total) > 0)
-    .map(s => ({
-      name: s.head_name,
-      value: Number(s.total),
-    }))
+    .map(s => ({ name: s.head_name, value: Number(s.total) }))
 
   const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899']
 
@@ -93,11 +83,11 @@ export default async function TransparencyPage() {
                     fill="#8884d8"
                     dataKey="value"
                   >
-                    {chartData.map((entry, index) => (
+                    {chartData.map((_, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value: number) => `INR ${value.toFixed(2)}`} />
+                  <Tooltip formatter={(v: number) => `INR ${v.toFixed(2)}`} />
                   <Legend />
                 </PieChart>
               </ResponsiveContainer>
@@ -153,9 +143,7 @@ export default async function TransparencyPage() {
                   <TableRow key={i}>
                     <TableCell>{r.donor_name}</TableCell>
                     <TableCell>{r.cause}</TableCell>
-                    <TableCell className="text-right font-mono">
-                      INR {r.amount}
-                    </TableCell>
+                    <TableCell className="text-right font-mono">INR {r.amount}</TableCell>
                     <TableCell>{r.payment_method.toUpperCase()}</TableCell>
                     <TableCell>{r.date}</TableCell>
                   </TableRow>

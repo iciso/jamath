@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
-import { sql } from "@/lib/neon"
+import { getSql } from "@/lib/db"
 
 export async function GET(req: Request) {
   try {
@@ -12,7 +12,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const sql = sql
+    const sql = getSql()
     const applications = await sql`
       SELECT id, certificate_type, details, status, created_at
       FROM certificate_applications
