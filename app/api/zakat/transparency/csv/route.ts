@@ -1,5 +1,5 @@
 // app/api/zakat/transparency/csv/route.ts
-import { sql } from "@/lib/db"  // CORRECT — Neon Serverless
+import { sql } from "@/lib/db"  // CORRECT — uses your perfect lib/db.ts
 import { NextResponse } from "next/server"
 
 export async function GET() {
@@ -36,9 +36,9 @@ export async function GET() {
       },
     })
   } catch (error: any) {
-    console.error("CSV API Error:", error)
+    console.error("CSV Generation Failed:", error)
     return new Response(
-      "Error generating CSV. Please try again later.",
+      "Failed to generate report. Please try again later.",
       { status: 500 }
     )
   }
