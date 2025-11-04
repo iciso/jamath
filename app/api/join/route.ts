@@ -1,10 +1,6 @@
 // app/api/join/route.ts
 import { NextResponse } from "next/server"
-<<<<<<< HEAD
 import { sql } from "@/lib/db"  // ← Use our Neon driver
-=======
-import { sql } from "@/lib/neon"
->>>>>>> e9c972f (All modified files for sql commands)
 import bcrypt from "bcryptjs"
 
 export async function POST(req: Request) {
@@ -37,12 +33,7 @@ export async function POST(req: Request) {
 
     const passwordHash = await bcrypt.hash(password, 10)
 
-<<<<<<< HEAD
     // === INSERT ===
-=======
-    const sql = sql
-
->>>>>>> e9c972f (All modified files for sql commands)
     try {
       await sql`
         INSERT INTO pending_members (

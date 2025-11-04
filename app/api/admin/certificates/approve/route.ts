@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
-import { sql } from "@/lib/neon"
+import { getSql } from "@/lib/db"
 
 export async function POST(req: Request) {
   try {
@@ -13,7 +13,7 @@ export async function POST(req: Request) {
     }
 
     const { applicationId } = await req.json()
-    const sql = sql
+    const sql = getSql()
 
     const app = await sql`
       SELECT id, profile_id, certificate_type FROM certificate_applications WHERE id = ${applicationId}
