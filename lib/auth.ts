@@ -1,4 +1,4 @@
-// lib/auth.ts 
+// lib/auth.ts
 import type { NextAuthOptions } from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import { sql } from "@/lib/neon"  // ← ONLY THIS ONE
