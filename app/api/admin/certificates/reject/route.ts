@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
-import { getSql } from "@/lib/db"
+import { sql } from "@/lib/db"
 
 export async function POST(req: Request) {
   try {
@@ -13,7 +13,7 @@ export async function POST(req: Request) {
     }
 
     const { applicationId } = await req.json()
-    const sql = getSql()
+    const sql = sql()
 
     await sql`
       UPDATE certificate_applications

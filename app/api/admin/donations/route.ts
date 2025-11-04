@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
-import { getSql } from "@/lib/db"
+import { sql } from "@/lib/db"
 
 export async function GET() {
   try {
@@ -12,7 +12,7 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const sql = getSql()
+    const sql = sql()
     const pending = await sql`
       SELECT d.*, h.name as head_name, p.name as donor_name
       FROM donations d

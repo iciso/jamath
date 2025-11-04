@@ -3,7 +3,7 @@ import type { NextAuthOptions } from "next-auth"
 import Credentials from "next-auth/providers/credentials"
 import { sql } from "@/lib/neon"
 import bcrypt from "bcryptjs"
-import { getSql } from "@/lib/db" // ← Add this import
+import { sql } from "@/lib/db" // ← Add this import
 
 export const authOptions: NextAuthOptions = {
   pages: {
@@ -62,7 +62,7 @@ export const authOptions: NextAuthOptions = {
 
         // ← NEW: Inject profileId from profiles table
         try {
-          const db = getSql()
+          const db = sql()
           const [profile] = await db`
             SELECT id FROM profiles WHERE user_id = ${token.id} LIMIT 1
           `

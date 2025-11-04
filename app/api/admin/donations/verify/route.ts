@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
-import { getSql } from "@/lib/db"
+import { sql } from "@/lib/db"
 
 export async function POST(req: Request) {
   try {
@@ -17,7 +17,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid action" }, { status: 400 })
     }
 
-    const sql = getSql()
+    const sql = sql()
     await sql`
       UPDATE donations
       SET status = ${action}, verified_by = ${session.user.id}, verified_at = now()

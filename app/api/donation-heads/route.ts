@@ -1,10 +1,10 @@
 // app/api/donation-heads/route.ts
 import { NextResponse } from "next/server"
-import { getSql } from "@/lib/db"
+import { sql } from "@/lib/db"
 
 export async function GET() {
   try {
-    const sql = getSql()
+    const sql = sql()
     const heads = await sql`
       SELECT id, slug, name, description, is_zakat, is_fitr, is_qurabani
       FROM donation_heads

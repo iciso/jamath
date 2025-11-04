@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
-import { getSql } from "@/lib/db"
+import { sql } from "@/lib/db"
 
 export async function POST(req: Request) {
   try {
@@ -14,7 +14,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Missing fields" }, { status: 400 })
     }
 
-    const sql = getSql()
+    const sql = sql()
     const result = await sql`
       INSERT INTO donations (profile_id, head_id, amount, payment_method, transaction_id, notes)
       VALUES (${profileId}, ${headId}, ${amount}, ${method}, ${transactionId}, ${notes})
@@ -37,7 +37,7 @@ export async function GET(req: Request) {
     const profileId = searchParams.get("profileId")
     if (!profileId) return NextResponse.json({ error: "profileId required" }, { status: 400 })
 
-    const sql = getSql()
+    const sql = sql()
     const donations = await sql`
       SELECT d.*, h.name as head_name, h.is_zakat
       FROM donations d

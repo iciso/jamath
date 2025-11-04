@@ -1,7 +1,7 @@
 // app/api/certificates/download/route.ts
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
-import { getSql } from "@/lib/db"
+import { sql } from "@/lib/db"
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib"
 
 export async function GET(req: Request) {
@@ -23,7 +23,7 @@ export async function GET(req: Request) {
       })
     }
 
-    const sql = getSql()
+    const sql = sql()
     const [app] = await sql`
       SELECT ca.*, ic.certificate_number, p.name as member_name
       FROM certificate_applications ca
