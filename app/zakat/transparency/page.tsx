@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { sql } from "@/lib/neon"
+import { ZakatChart } from "@/components/ZakatChart"
 
 export const dynamic = 'force-dynamic'
 
@@ -36,6 +37,10 @@ export default async function TransparencyPage() {
     LIMIT 10
   `
 
+  const chartData = summary
+    .filter(s => Number(s.total) > 0)
+    .map(s => ({ name: s.head_name, value: Number(s.total) }))
+
   return (
     <main className="container mx-auto px-4 py-8 max-w-5xl">
       <div className="text-center mb-10">
@@ -50,9 +55,10 @@ export default async function TransparencyPage() {
         </p>
       </div>
 
-      <Card className="mb-8 bg-gradient-to-br from-green-50 to-emerald-50 border-emerald-200">
+      {/* Summary Table */}
+      <Card className="mb-8">
         <CardHeader>
-          <CardTitle className="text-green-800">Donation Summary</CardTitle>
+          <CardTitle>Donation Summary</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
@@ -81,6 +87,21 @@ export default async function TransparencyPage() {
         </CardContent>
       </Card>
 
+      {/* Pie Chart — Client Component */}
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle>Distribution by Cause</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {chartData.length > 0 ? (
+            <ZakatChart data={chartData} />
+          ) : (
+            <p className="text-center text-muted-foreground">No donations to display</p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Recent Donations */}
       <Card className="mt-8">
         <CardHeader><CardTitle>Recent Verified Donations</CardTitle></CardHeader>
         <CardContent>
