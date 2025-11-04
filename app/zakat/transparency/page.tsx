@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { sql } from "@/lib/neon"
-import { ZakatChart } from "@/components/ZakatChart"
 
 export const dynamic = 'force-dynamic'
 
@@ -37,10 +36,6 @@ export default async function TransparencyPage() {
     LIMIT 10
   `
 
-  const chartData = summary
-    .filter(s => Number(s.total) > 0)
-    .map(s => ({ name: s.head_name, value: Number(s.total) }))
-
   return (
     <main className="container mx-auto px-4 py-8 max-w-5xl">
       <div className="text-center mb-10">
@@ -56,9 +51,9 @@ export default async function TransparencyPage() {
       </div>
 
       {/* Summary Table */}
-      <Card className="mb-8">
+      <Card className="mb-8 bg-gradient-to-br from-green-50 to-emerald-50 border-emerald-200">
         <CardHeader>
-          <CardTitle>Donation Summary</CardTitle>
+          <CardTitle className="text-green-800">Donation Summary</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
@@ -73,37 +68,31 @@ export default async function TransparencyPage() {
               {summary.map((s, i) => (
                 <TableRow key={i}>
                   <TableCell className="font-medium">{s.head_name}</TableCell>
-                  <TableCell className="text-right font-mono text-green-700">{s.total}</TableCell>
+                  <TableCell className="text-right font-mono text-green-700">
+                    ₹{Number(s.total).toLocaleString('en-IN')}
+                  </TableCell>
                   <TableCell className="text-right">{s.count}</TableCell>
                 </TableRow>
               ))}
-              <TableRow className="font-bold border-t-2">
+              <TableRow className="font-bold border-t-2 border-green-300">
                 <TableCell>Grand Total</TableCell>
-                <TableCell className="text-right text-emerald-700">INR {grandTotal.toFixed(2)}</TableCell>
-                <TableCell className="text-right">{summary.reduce((sum, s) => sum + Number(s.count), 0)}</TableCell>
+                <TableCell className="text-right text-emerald-700 font-bold">
+                  ₹{grandTotal.toLocaleString('en-IN')}
+                </TableCell>
+                <TableCell className="text-right">
+                  {summary.reduce((sum, s) => sum + Number(s.count), 0)}
+                </TableCell>
               </TableRow>
             </TableBody>
           </Table>
         </CardContent>
       </Card>
 
-      {/* Pie Chart — Client Component */}
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle>Distribution by Cause</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {chartData.length > 0 ? (
-            <ZakatChart data={chartData} />
-          ) : (
-            <p className="text-center text-muted-foreground">No donations to display</p>
-          )}
-        </CardContent>
-      </Card>
-
       {/* Recent Donations */}
       <Card className="mt-8">
-        <CardHeader><CardTitle>Recent Verified Donations</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle>Recent Verified Donations</CardTitle>
+        </CardHeader>
         <CardContent>
           {recent.length > 0 ? (
             <Table>
@@ -121,7 +110,9 @@ export default async function TransparencyPage() {
                   <TableRow key={i}>
                     <TableCell>{r.donor_name}</TableCell>
                     <TableCell>{r.cause}</TableCell>
-                    <TableCell className="text-right font-mono">INR {r.amount}</TableCell>
+                    <TableCell className="text-right font-mono">
+                      ₹{Number(r.amount).toLocaleString('en-IN')}
+                    </TableCell>
                     <TableCell>{r.payment_method.toUpperCase()}</TableCell>
                     <TableCell>{r.date}</TableCell>
                   </TableRow>
@@ -129,14 +120,17 @@ export default async function TransparencyPage() {
               </TableBody>
             </Table>
           ) : (
-            <p className="text-center text-muted-foreground">No verified donations yet</p>
+            <p className="text-center text-muted-foreground py-8">
+              No verified donations yet
+            </p>
           )}
         </CardContent>
       </Card>
 
+      {/* CSV Download */}
       <div className="mt-8 text-center">
         <Button asChild>
-          <a href="/api/zakat/transparency/csv" download className="inline-flex items-center">
+          <a href="/api/zakat/transparency/csv" download className="inline-flex items-center gap-2">
             Download Full Report (CSV)
           </a>
         </Button>
