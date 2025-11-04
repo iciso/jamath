@@ -1,9 +1,8 @@
 // lib/auth.ts
 import type { NextAuthOptions } from "next-auth"
 import Credentials from "next-auth/providers/credentials"
-import { sql } from "@/lib/neon"
+import { sql } from "@/lib/neon"  // ← ONLY THIS ONE
 import bcrypt from "bcryptjs"
-import { sql } from "@/lib/db" // ← Add this import
 
 export const authOptions: NextAuthOptions = {
   pages: {
@@ -23,14 +22,12 @@ export const authOptions: NextAuthOptions = {
       async authorize(creds) {
         if (!creds?.email || !creds?.password) return null
 
-        const rows = await sql<
-          { id: string; email: string; name: string | null; password_hash: string; role: "admin" | "member" }[]
-        >`
-            select id, email, name, password_hash, role
-            from users
-            where email = ${creds.email.toLowerCase()}
-            limit 1
-          `
+        const rows = await sql`
+          SELECT id, email, name, password_hash, role
+          FROM users
+          WHERE email = ${creds.email.toLowerCase()}
+          LIMIT 1
+        `
 
         const user = rows[0]
         if (!user) return null
@@ -60,18 +57,16 @@ export const authOptions: NextAuthOptions = {
         ;(session.user as any).id = token.id
         ;(session.user as any).role = token.role ?? "member"
 
-        // ← NEW: Inject profileId from profiles table
+        // Inject profileId
         try {
-          const db = sql()
-          const [profile] = await db`
+          const [profile] = await sql`
             SELECT id FROM profiles WHERE user_id = ${token.id} LIMIT 1
           `
           if (profile) {
             ;(session.user as any).profileId = profile.id
           }
         } catch (err) {
-          console.error("[Auth] Failed to fetch profileId:", err)
-          // Don't break login — just no profileId
+          console.error("[Auth] Profile fetch failed:", err)
         }
       }
       return session
@@ -79,7 +74,6 @@ export const authOptions: NextAuthOptions = {
   },
 }
 
-// Helper to use in RSC or route handlers
 export function requiredRole(role: "admin" | "member", session?: any) {
   const r = (session?.user as any)?.role ?? "member"
   if (role === "admin" && r !== "admin") return false
