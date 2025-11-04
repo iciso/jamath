@@ -1,9 +1,7 @@
 // app/api/zakat/transparency/csv/route.ts
-import { getSql } from "@/lib/db"
+import { sql } from "@/lib/neon" // ← CHANGE
 
 export async function GET() {
-  const sql = getSql()
-
   const data = await sql`
     SELECT 
       TO_CHAR(d.created_at, 'YYYY-MM-DD') as date,

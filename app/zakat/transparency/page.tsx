@@ -2,41 +2,38 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
-import { getSql } from "@/lib/db"
+import { sql } from "@/lib/neon" // ← CHANGE: Use sql from neon
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts"
 
 export const dynamic = 'force-dynamic'
 
 interface Summary {
   head_name: string
-  total: number
+  total: string
   count: number
 }
 
 export default async function TransparencyPage() {
-  const sql = getSql()
-
-  // 1. Total Summary by Cause
+  // ← Use sql directly
   const summary: Summary[] = await sql`
     SELECT 
       h.name as head_name,
-      COALESCE(SUM(d.amount), 0)::numeric(12,2) as total,
+      COALESCE(SUM(d.amount), 0)::text as total,
       COUNT(d.id) as count
     FROM donation_heads h
     LEFT JOIN donations d ON d.head_id = h.id AND d.status = 'verified'
     WHERE h.active = true
     GROUP BY h.id, h.name
-    ORDER BY total DESC
+    ORDER BY total::numeric DESC
   `
 
   const grandTotal = summary.reduce((sum, s) => sum + Number(s.total), 0)
 
-  // 2. Recent 10 Verified Donations (Public View)
   const recent = await sql`
     SELECT 
       p.name as donor_name,
       h.name as cause,
-      d.amount::numeric(12,2),
+      d.amount::text,
       d.payment_method,
       TO_CHAR(d.created_at, 'DD Mon YYYY') as date
     FROM donations d
@@ -47,9 +44,8 @@ export default async function TransparencyPage() {
     LIMIT 10
   `
 
-  // 3. Pie Chart Data
   const chartData = summary
-    .filter(s => s.total > 0)
+    .filter(s => Number(s.total) > 0)
     .map(s => ({
       name: s.head_name,
       value: Number(s.total),
@@ -71,7 +67,6 @@ export default async function TransparencyPage() {
         </p>
       </div>
 
-      {/* Grand Total */}
       <Card className="mb-8 bg-green-50 border-green-200">
         <CardContent className="pt-6">
           <p className="text-center text-sm text-green-700 font-medium">Total Verified Collections</p>
@@ -82,11 +77,8 @@ export default async function TransparencyPage() {
       </Card>
 
       <div className="grid gap-8 md:grid-cols-2">
-        {/* Pie Chart */}
         <Card>
-          <CardHeader>
-            <CardTitle>Breakdown by Cause</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle>Breakdown by Cause</CardTitle></CardHeader>
           <CardContent>
             {chartData.length > 0 ? (
               <ResponsiveContainer width="100%" height={300}>
@@ -115,11 +107,8 @@ export default async function TransparencyPage() {
           </CardContent>
         </Card>
 
-        {/* Summary Table */}
         <Card>
-          <CardHeader>
-            <CardTitle>Summary by Cause</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle>Summary by Cause</CardTitle></CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
@@ -145,11 +134,8 @@ export default async function TransparencyPage() {
         </Card>
       </div>
 
-      {/* Recent Donations */}
       <Card className="mt-8">
-        <CardHeader>
-          <CardTitle>Recent Verified Donations</CardTitle>
-        </CardHeader>
+        <CardHeader><CardTitle>Recent Verified Donations</CardTitle></CardHeader>
         <CardContent>
           {recent.length > 0 ? (
             <Table>
@@ -182,14 +168,9 @@ export default async function TransparencyPage() {
         </CardContent>
       </Card>
 
-      {/* Export Button */}
       <div className="mt-8 text-center">
         <Button asChild>
-          <a
-            href="/api/zakat/transparency/csv"
-            download="zakat-transparency.csv"
-            className="inline-flex items-center"
-          >
+          <a href="/api/zakat/transparency/csv" download className="inline-flex items-center">
             Download Full Report (CSV)
           </a>
         </Button>
