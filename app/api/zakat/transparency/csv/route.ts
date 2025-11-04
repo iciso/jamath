@@ -1,5 +1,6 @@
 // app/api/zakat/transparency/csv/route.ts
-import { sql } from "@/lib/db"  // ← Use our Neon driver
+import { sql } from "@/lib/db"  // CORRECT — Neon Serverless
+import { NextResponse } from "next/server"
 
 export async function GET() {
   try {
@@ -30,11 +31,15 @@ export async function GET() {
 
     return new Response(csv, {
       headers: {
-        "Content-Type": "text/csv",
+        "Content-Type": "text/csv; charset=utf-8",
         "Content-Disposition": "attachment; filename=zakat-transparency.csv",
       },
     })
-  } catch (error) {
-    return new Response("Error generating CSV", { status: 500 })
+  } catch (error: any) {
+    console.error("CSV API Error:", error)
+    return new Response(
+      "Error generating CSV. Please try again later.",
+      { status: 500 }
+    )
   }
 }
