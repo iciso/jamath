@@ -1,61 +1,29 @@
 // app/zakat/page.tsx
 import { getServerSession } from "next-auth"
 import { redirect } from "next/navigation"
-import { authOptions } from "@/lib/auth"
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { ZakatCalculator } from "@/components/zakat/calculator"
 import { DonationForm } from "@/components/zakat/donation-form"
 import { DonationHistory } from "@/components/zakat/donation-history"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
-import { sql } from "@/lib/db"
 
 export default async function ZakatPage() {
   const session = await getServerSession(authOptions)
-  if (!session?.user) redirect("/auth/signin")
+  if (!session?.user) redirect("/signin")
 
-  const profileId = (session.user as any)?.profileId
+  const profileId = (session.user as any).profileId
   if (!profileId) {
     return (
       <div className="container mx-auto p-8 text-center">
-        <p className="text-orange-600">Setting up profile... Refresh in 10s</p>
+        <p className="text-orange-600">Creating your profile... Refresh in 10s</p>
       </div>
     )
   }
 
-  let totalAmount = 0
-  try {
-    const result = await sql`
-      SELECT COALESCE(SUM(amount), 0)::text as total
-      FROM donations
-      WHERE status = 'verified'
-        AND created_at >= date_trunc('month', CURRENT_DATE)
-    `
-    totalAmount = Number(result.rows[0]?.total || 0)
-  } catch (e) {}
-
   return (
     <main className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Zakat & Charity</h1>
-        <Link href="/zakat/transparency">
-          <Button variant="outline" size="sm">View Transparency Report</Button>
-        </Link>
-      </div>
-
-      <Card className="mb-8 bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-200">
-        <CardHeader>
-          <CardTitle className="text-green-800">This Month's Zakat</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-3xl font-bold text-emerald-700">
-            ₹{totalAmount.toLocaleString('en-IN')}
-          </p>
-          <p className="text-sm text-muted-foreground mt-1">
-            Verified donations from the community
-          </p>
-        </CardContent>
-      </Card>
+      <h1 className="text-2xl font-bold mb-6">Zakat & Charity</h1>
+      <p className="text-green-600 mb-4">Profile ID: {profileId}</p>
 
       <div className="grid gap-8 md:grid-cols-2">
         <Card>
