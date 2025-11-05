@@ -23,22 +23,29 @@ export const authOptions = {
       return token
     },
     async session({ session, token }) {
-      console.log("SESSION CALLBACK:", { tokenSub: token.sub, tokenProfileId: token.profileId })
+      console.log("SESSION CALLBACK:", { 
+        tokenSub: token.sub, 
+        tokenProfileId: token.profileId 
+      })
 
+      // Attach basic user info
       if (token.sub) {
         session.user.id = token.sub
         session.user.name = token.name
         session.user.email = token.email
       }
 
+      // ONLY RUN ONCE PER USER
       if (token.sub && !token.profileId) {
         try {
+          // Check if profile exists
           let result = await sql`
             SELECT id FROM profiles WHERE user_id = ${token.sub} LIMIT 1
           `
 
           let profileId = result.rows[0]?.id
 
+          // Create if missing
           if (!profileId) {
             result = await sql`
               INSERT INTO profiles (user_id, name, phone, address)
@@ -48,16 +55,19 @@ export const authOptions = {
             profileId = result.rows[0].id
           }
 
+          // SAVE IN JWT — THIS IS THE KEY
           token.profileId = profileId
           session.user.profileId = profileId
         } catch (error) {
-          console.error("Profile error:", error)
+          console.error("Profile creation failed:", error)
         }
-      } else if (token.profileId) {
+      } 
+      // If already in JWT, attach to session
+      else if (token.profileId) {
         session.user.profileId = token.profileId
       }
 
-      // CRITICAL: RETURN SESSION
+      // FINAL: RETURN SESSION
       return session
     },
   },
