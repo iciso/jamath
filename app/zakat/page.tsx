@@ -22,51 +22,38 @@ export default async function ZakatPage() {
 
   // ——— PROFILE: FETCH OR CREATE ———
   try {
-    const [profile] = await sql`
+    const rows = await sql`
       SELECT id FROM profiles WHERE user_id = ${userId} LIMIT 1
     `
-    profileId = profile?.id ?? null
+    profileId = rows[0]?.id ?? null
   } catch (err: any) {
-    if (err.message.includes("Database not available")) {
-      console.warn("DB unavailable — skipping profile fetch")
-    } else {
-      console.error("[Zakat] Profile fetch failed:", err)
-    }
+    console.error("[Zakat] Profile fetch failed:", err)
   }
 
   if (!profileId) {
     try {
-      const [newProfile] = await sql`
+      const newProfileRows = await sql`
         INSERT INTO profiles (user_id, name, phone, address)
         VALUES (${userId}, ${session.user?.name || "Member"}, '', '')
         RETURNING id
       `
-      profileId = newProfile.id
+      profileId = newProfileRows[0].id
     } catch (err: any) {
-  if (err.message.includes("Database not available")) {
-        console.warn("DB unavailable — skipping profile creation")
-      } else {
-        console.error("[Zakat] Profile creation failed:", err)
-      }
+      console.error("[Zakat] Profile creation failed:", err)
     }
   }
 
-  // ——— TOTAL ZAKAT ———
+  // ——— TOTAL ZAKAT THIS MONTH ———
   try {
-    const rows = await sql`
+    const totalRows = await sql`
       SELECT COALESCE(SUM(amount), 0)::text as total
       FROM donations
       WHERE status = 'verified'
         AND created_at >= date_trunc('month', CURRENT_DATE)
     `
-    totalAmount = Number(rows[0]?.total || 0)
+    totalAmount = Number(totalRows[0].total)
   } catch (err: any) {
-    if (err.message.includes("Database not available")) {
-      console.warn("DB unavailable — showing ₹0")
-    } else {
-      console.error("[Zakat] Total fetch failed:", err)
-    }
-    totalAmount = 0
+    console.error("[Zakat] Total fetch failed:", err)
   }
 
   return (
