@@ -3,18 +3,13 @@ import NextAuth from "next-auth"
 import Google from "next-auth/providers/google"
 import { sql } from "@/lib/db"
 
-// === FORCE ENV VARS (TEMP FIX) ===
-const NEXTAUTH_SECRET = process.env.NEXTAUTH_SECRET || "PtMVsl0yXjXlZHZKiG2yZH0PSusIVK8PY4I0ZkYx5dU="
-const NEXTAUTH_URL = process.env.NEXTAUTH_URL || "https://v0-masjid-community-app.vercel.app"
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || "215508504819-l9sgava2j04ie992cpqie3mmpt93kugb.apps.googleusercontent.com"
-const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || "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"
+// === HARD-CODE ALL VALUES (FORCE) ===
+const NEXTAUTH_SECRET = "PtMVsl0yXjXlZHZKiG2yZH0PSusIVK8PY4I0ZkYx5dU="
+const NEXTAUTH_URL = "https://v0-masjid-community-app.vercel.app"
+const GOOGLE_CLIENT_ID = "215508504819-l9sgava2j04ie992cpqie3mmpt93kugb.apps.googleusercontent.com"
+const GOOGLE_CLIENT_SECRET = "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"
 
-console.log("NextAuth DEBUG:", {
-  secret: NEXTAUTH_SECRET ? "SET" : "MISSING",
-  clientId: GOOGLE_CLIENT_ID ? "SET" : "MISSING",
-  clientSecret: GOOGLE_CLIENT_SECRET ? "SET" : "MISSING",
-  url: NEXTAUTH_URL
-})
+console.log("NextAuth: ALL VALUES HARD-CODED")
 
 export const authOptions = {
   providers: [
