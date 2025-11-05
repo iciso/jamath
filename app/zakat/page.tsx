@@ -26,8 +26,12 @@ export default async function ZakatPage() {
       SELECT id FROM profiles WHERE user_id = ${userId} LIMIT 1
     `
     profileId = profile?.id ?? null
-  } catch (err) {
-    console.error("[Zakat] Profile fetch failed:", err)
+  } catch (err: any) {
+    if (err.message.includes("Database not available")) {
+      console.warn("DB unavailable — skipping profile fetch")
+    } else {
+      console.error("[Zakat] Profile fetch failed:", err)
+    }
   }
 
   if (!profileId) {
@@ -38,13 +42,16 @@ export default async function ZakatPage() {
         RETURNING id
       `
       profileId = newProfile.id
-    } catch (err) {
-      console.error("[Zakat] Profile creation failed:", err)
-      // Do NOT redirect — show page with fallback
+    } catch (err: any) {
+  if (err.message.includes("Database not available")) {
+        console.warn("DB unavailable — skipping profile creation")
+      } else {
+        console.error("[Zakat] Profile creation failed:", err)
+      }
     }
   }
 
-  // ——— TOTAL ZAKAT THIS MONTH ———
+  // ——— TOTAL ZAKAT ———
   try {
     const rows = await sql`
       SELECT COALESCE(SUM(amount), 0)::text as total
@@ -53,8 +60,12 @@ export default async function ZakatPage() {
         AND created_at >= date_trunc('month', CURRENT_DATE)
     `
     totalAmount = Number(rows[0]?.total || 0)
-  } catch (err) {
-    console.error("[Zakat] Total fetch failed:", err)
+  } catch (err: any) {
+    if (err.message.includes("Database not available")) {
+      console.warn("DB unavailable — showing ₹0")
+    } else {
+      console.error("[Zakat] Total fetch failed:", err)
+    }
     totalAmount = 0
   }
 
@@ -69,7 +80,6 @@ export default async function ZakatPage() {
         </Link>
       </div>
 
-      {/* LIVE COUNTER */}
       <Card className="mb-8 bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-200">
         <CardHeader>
           <CardTitle className="text-green-800">This Month's Zakat</CardTitle>
@@ -84,21 +94,14 @@ export default async function ZakatPage() {
         </CardContent>
       </Card>
 
-      {/* MAIN GRID */}
       <div className="grid gap-8 md:grid-cols-2">
         <Card>
-          <CardHeader>
-            <CardTitle>Zakat Calculator</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ZakatCalculator />
-          </CardContent>
+          <CardHeader><CardTitle>Zakat Calculator</CardTitle></CardHeader>
+          <CardContent><ZakatCalculator /></CardContent>
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle>Donate Now</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle>Donate Now</CardTitle></CardHeader>
           <CardContent>
             {profileId ? (
               <DonationForm profileId={profileId} />
@@ -111,11 +114,8 @@ export default async function ZakatPage() {
         </Card>
       </div>
 
-      {/* HISTORY */}
       <Card className="mt-8">
-        <CardHeader>
-          <CardTitle>Your Donation History</CardTitle>
-        </CardHeader>
+        <CardHeader><CardTitle>Your Donation History</CardTitle></CardHeader>
         <CardContent>
           {profileId ? (
             <DonationHistory profileId={profileId} />
