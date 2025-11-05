@@ -1,6 +1,6 @@
 import { getServerSession } from "next-auth"
 import { redirect } from "next/navigation"
-import { sql } from "@/lib/neon"
+import { sql } from "@/lib/db"
 import { authOptions } from "@/lib/auth"
 import { ProfileForm } from "@/components/profile/profile-form"
 

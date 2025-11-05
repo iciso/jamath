@@ -1,7 +1,7 @@
 // app/api/donations/receipt/route.ts
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
-import { sql } from "@/lib/neon"
+import { sql } from "@/lib/db"
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib"
 
 export const dynamic = 'force-dynamic'

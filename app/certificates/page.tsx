@@ -4,7 +4,7 @@ import { authOptions } from "@/lib/auth"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { CertificateForm } from "@/components/certificates/certificate-form"
 import { CertificatesList } from "@/components/certificates/certificates-list"
-import { sql } from "@/lib/neon"
+import { sql } from "@/lib/db"
 
 export default async function CertificatesPage() {
   const session = await getServerSession(authOptions)

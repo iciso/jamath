@@ -1,5 +1,5 @@
 import { getServerSession } from "next-auth"
-import { sql } from "@/lib/neon"
+import { sql } from "@/lib/db"
 import { authOptions } from "@/lib/auth"
 
 export async function PUT(request: Request) {
