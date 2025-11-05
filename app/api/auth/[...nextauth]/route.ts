@@ -15,6 +15,7 @@ export const authOptions = {
   session: { strategy: "jwt" },
   callbacks: {
     async jwt({ token, user }) {
+      // First login: attach user
       if (user) {
         token.sub = user.id
         token.name = user.name
@@ -23,51 +24,52 @@ export const authOptions = {
       return token
     },
     async session({ session, token }) {
-      console.log("SESSION CALLBACK:", { 
-        tokenSub: token.sub, 
-        tokenProfileId: token.profileId 
-      })
+      console.log("SESSION CALLBACK START:", { tokenSub: token.sub, hasProfileId: !!token.profileId })
 
-      // Attach basic user info
+      // Attach user basics
       if (token.sub) {
         session.user.id = token.sub
         session.user.name = token.name
         session.user.email = token.email
       }
 
-      // ONLY RUN ONCE PER USER
-      if (token.sub && !token.profileId) {
-        try {
-          // Check if profile exists
-          let result = await sql`
-            SELECT id FROM profiles WHERE user_id = ${token.sub} LIMIT 1
-          `
+      // ENSURE profileId IS IN JWT
+      if (token.sub) {
+        let profileId = token.profileId
 
-          let profileId = result.rows[0]?.id
-
-          // Create if missing
-          if (!profileId) {
-            result = await sql`
-              INSERT INTO profiles (user_id, name, phone, address)
-              VALUES (${token.sub}, ${token.name || "Member"}, '', '')
-              RETURNING id
+        if (!profileId) {
+          try {
+            // Try to get from DB
+            let result = await sql`
+              SELECT id FROM profiles WHERE user_id = ${token.sub} LIMIT 1
             `
-            profileId = result.rows[0].id
-          }
+            profileId = result.rows[0]?.id
 
-          // SAVE IN JWT — THIS IS THE KEY
-          token.profileId = profileId
-          session.user.profileId = profileId
-        } catch (error) {
-          console.error("Profile creation failed:", error)
+            // Create if missing
+            if (!profileId) {
+              result = await sql`
+                INSERT INTO profiles (user_id, name, phone, address)
+                VALUES (${token.sub}, ${token.name || "Member"}, '', '')
+                RETURNING id
+              `
+              profileId = result.rows[0].id
+            }
+
+            // FORCE INTO JWT
+            token.profileId = profileId
+          } catch (error) {
+            console.error("Profile error:", error)
+          }
         }
-      } 
-      // If already in JWT, attach to session
-      else if (token.profileId) {
-        session.user.profileId = token.profileId
+
+        // ATTACH TO SESSION
+        if (profileId) {
+          session.user.profileId = profileId
+        }
       }
 
-      // FINAL: RETURN SESSION
+      console.log("SESSION CALLBACK END:", { profileId: session.user.profileId })
+
       return session
     },
   },

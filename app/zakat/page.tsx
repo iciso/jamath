@@ -12,9 +12,9 @@ export default async function ZakatPage() {
   if (!profileId) {
     return (
       <div className="container mx-auto p-8 text-center">
-        <p className="text-orange-600">Finalizing profile... Refresh in 5s</p>
-        <pre className="mt-4 text-xs bg-gray-100 p-2 rounded max-w-md mx-auto overflow-auto">
-          Session Debug: {JSON.stringify(session, null, 2)}
+        <p className="text-orange-600 font-bold">Finalizing profile... Refresh in 5s</p>
+        <pre className="mt-4 text-xs bg-gray-100 p-3 rounded max-w-2xl mx-auto overflow-auto text-left">
+          {JSON.stringify(session, null, 2)}
         </pre>
       </div>
     )
@@ -22,13 +22,15 @@ export default async function ZakatPage() {
 
   return (
     <main className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6 text-green-800">Zakat & Charity</h1>
-      <p className="text-green-600 mb-4 font-mono">Profile ID: {profileId}</p>
+      <h1 className="text-3xl font-bold mb-6 text-green-800 text-center">Zakat & Charity</h1>
+      <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-8 text-center">
+        <p className="text-green-800 font-bold text-lg">Alhamdulillah! Profile Ready</p>
+        <p className="text-sm text-green-700">Profile ID: <code className="bg-white px-2 py-1 rounded">{profileId}</code></p>
+      </div>
 
       {/* Your Zakat UI here */}
-      <div className="bg-green-50 p-4 rounded-lg">
-        <p className="text-green-800 font-bold">Alhamdulillah! Your profile is ready.</p>
-        <p className="text-sm">You can now calculate Zakat and donate.</p>
+      <div className="text-center">
+        <p className="text-gray-600">You can now calculate Zakat and donate.</p>
       </div>
     </main>
   )
