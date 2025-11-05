@@ -1,8 +1,13 @@
 // lib/neon.ts
+
 import { neon } from "@neondatabase/serverless"
 
-if (!process.env.DATABASE_URL) {
-  throw new Error("DATABASE_URL is missing in environment variables")
+const DATABASE_URL = process.env.DATABASE_URL
+
+if (!DATABASE_URL) {
+  console.error("DATABASE_URL missing - using fallback")
+  // In production, this will crash, but for testing:
+  throw new Error("DATABASE_URL is required")
 }
 
-export const sql = neon(process.env.DATABASE_URL)
+export const sql = neon(DATABASE_URL)
