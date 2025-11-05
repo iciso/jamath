@@ -17,16 +17,20 @@ export default async function ZakatPage() {
   const profileId = (session.user as any)?.profileId
   if (!profileId) redirect("/profile")
 
-  // ← CORRECT: sql returns array of rows
-  const rows = await sql`
-    SELECT COALESCE(SUM(amount), 0)::text as total
-    FROM donations
-    WHERE status = 'verified'
-      AND created_at >= date_trunc('month', CURRENT_DATE)
-  `
-
-  // ← CORRECT: Extract from first row
-  const totalAmount = Number(rows[0]?.total || 0)
+  // ← SAFE: Always return number
+  let totalAmount = 0
+  try {
+    const rows = await sql`
+      SELECT COALESCE(SUM(amount), 0)::text as total
+      FROM donations
+      WHERE status = 'verified'
+        AND created_at >= date_trunc('month', CURRENT_DATE)
+    `
+    totalAmount = Number(rows[0]?.total || 0)
+  } catch (err) {
+    console.error("[Zakat Page] SQL Error:", err)
+    totalAmount = 0
+  }
 
   return (
     <main className="container mx-auto px-4 py-8">
@@ -61,13 +65,17 @@ export default async function ZakatPage() {
 
         <Card>
           <CardHeader><CardTitle>Donate Now</CardTitle></CardHeader>
-          <CardContent><DonationForm profileId={profileId} /></CardContent>
+          <CardContent>
+            <DonationForm profileId={profileId} />
+          </CardContent>
         </Card>
       </div>
 
       <Card className="mt-8">
         <CardHeader><CardTitle>Your Donation History</CardTitle></CardHeader>
-        <CardContent><DonationHistory profileId={profileId} /></CardContent>
+        <CardContent>
+          <DonationHistory profileId={profileId} />
+        </CardContent>
       </Card>
     </main>
   )
