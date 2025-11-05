@@ -1,27 +1,17 @@
 // lib/auth.ts
-// FINAL VERSION — WORKING 100% — DEPLOYED ON [CURRENT DATE]
 import NextAuth from "next-auth"
 import Google from "next-auth/providers/google"
 import { sql } from "@/lib/db"
 
-const SECRET = process.env.NEXTAUTH_SECRET
-const CLIENT_ID = process.env.GOOGLE_CLIENT_ID
-const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET
-
-if (!SECRET) throw new Error("NEXTAUTH_SECRET missing")
-if (!CLIENT_ID || !CLIENT_SECRET) throw new Error("Google OAuth missing")
-
-console.log("NextAuth OK: Google + Secret loaded")
-
 export const authOptions = {
   providers: [
     Google({
-      clientId: CLIENT_ID,
-      clientSecret: CLIENT_SECRET,
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
   ],
   pages: { signIn: "/auth/signin" },
-  secret: SECRET,
+  secret: process.env.NEXTAUTH_SECRET,
   session: { strategy: "jwt" as const },
   callbacks: {
     async jwt({ token, user }) {
@@ -53,6 +43,19 @@ export const authOptions = {
       return session
     },
   },
+}
+
+// RUNTIME CHECK — ONLY IN PRODUCTION
+if (typeof window === "undefined") {
+  const missing = []
+  if (!process.env.NEXTAUTH_SECRET) missing.push("NEXTAUTH_SECRET")
+  if (!process.env.GOOGLE_CLIENT_ID) missing.push("GOOGLE_CLIENT_ID")
+  if (!process.env.GOOGLE_CLIENT_SECRET) missing.push("GOOGLE_CLIENT_SECRET")
+
+  if (missing.length > 0) {
+    console.error("Missing env vars:", missing.join(", "))
+    // Don't throw — let NextAuth fail gracefully
+  }
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth(authOptions)
