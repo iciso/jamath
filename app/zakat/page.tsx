@@ -1,6 +1,6 @@
 // app/zakat/page.tsx
 import { getServerSession } from "next-auth"
-import { redirect } from "next/navigation"
+import { redirect } from "navigation"
 import { authOptions } from "@/lib/auth"
 import { ZakatCalculator } from "@/components/zakat/calculator"
 import { DonationForm } from "@/components/zakat/donation-form"
@@ -8,7 +8,7 @@ import { DonationHistory } from "@/components/zakat/donation-history"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { sql } from "@/lib/neon"
+import { sql } from "@/lib/db"
 
 export default async function ZakatPage() {
   const session = await getServerSession(authOptions)
@@ -26,33 +26,33 @@ export default async function ZakatPage() {
       SELECT id FROM profiles WHERE user_id = ${userId} LIMIT 1
     `
     profileId = rows[0]?.id ?? null
-  } catch (err: any) {
+  } catch (err) {
     console.error("[Zakat] Profile fetch failed:", err)
   }
 
   if (!profileId) {
     try {
-      const newProfileRows = await sql`
+      const rows = await sql`
         INSERT INTO profiles (user_id, name, phone, address)
         VALUES (${userId}, ${session.user?.name || "Member"}, '', '')
         RETURNING id
       `
-      profileId = newProfileRows[0].id
-    } catch (err: any) {
+      profileId = rows[0].id
+    } catch (err) {
       console.error("[Zakat] Profile creation failed:", err)
     }
   }
 
-  // ——— TOTAL ZAKAT THIS MONTH ———
+  // ——— TOTAL ZAKAT ———
   try {
-    const totalRows = await sql`
+    const rows = await sql`
       SELECT COALESCE(SUM(amount), 0)::text as total
       FROM donations
       WHERE status = 'verified'
         AND created_at >= date_trunc('month', CURRENT_DATE)
     `
-    totalAmount = Number(totalRows[0].total)
-  } catch (err: any) {
+    totalAmount = Number(rows[0].total)
+  } catch (err) {
     console.error("[Zakat] Total fetch failed:", err)
   }
 
