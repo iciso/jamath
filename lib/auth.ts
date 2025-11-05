@@ -1,7 +1,8 @@
 // lib/auth.ts
 import NextAuth from "next-auth"
 import Google from "next-auth/providers/google"
-import Credentials from "next-auth/providers/credentials"
+// REMOVE Credentials — it's breaking Google login
+// import Credentials from "next-auth/providers/credentials"
 import { sql } from "@/lib/db"
 
 export const authOptions = {
@@ -10,29 +11,19 @@ export const authOptions = {
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
-    Credentials({
-      name: "Phone",
-      credentials: {
-        phone: { label: "Phone", type: "text" },
-        otp: { label: "OTP", type: "text" },
-      },
-      async authorize() { return null },
-    }),
+    // Credentials provider REMOVED — causes "Invalid email or password"
   ],
   pages: { signIn: "/auth/signin" },
   secret: process.env.NEXTAUTH_SECRET,
 
   callbacks: {
     async jwt({ token, user }) {
-      // First login: attach user ID
       if (user?.id) {
         token.sub = user.id
       }
       return token
     },
     async session({ session, token }) {
-      console.log("[NextAuth] Session callback", { token })
-
       if (!token?.sub) return session
 
       let profileId: string | null = null
@@ -52,7 +43,7 @@ export const authOptions = {
           profileId = newProfile.rows[0]?.id
         }
       } catch (error) {
-        console.error("[NextAuth] Profile sync error:", error)
+        console.error("[Auth] Profile sync error:", error)
       }
 
       if (profileId && session.user) {

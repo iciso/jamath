@@ -15,14 +15,10 @@ export default async function ZakatPage() {
   if (!session?.user) redirect("/auth/signin")
 
   const profileId = (session.user as any)?.profileId
-
   if (!profileId) {
     return (
       <div className="container mx-auto p-8 text-center">
-        <p className="text-red-600">Profile setup failed. Please sign out and sign in again.</p>
-        <Button asChild className="mt-4">
-          <a href="/api/auth/signout">Sign Out</a>
-        </Button>
+        <p className="text-red-600">Profile setup in progress. Refresh in 10 seconds.</p>
       </div>
     )
   }
