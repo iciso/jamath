@@ -8,17 +8,24 @@ import { DonationHistory } from "@/components/zakat/donation-history"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { sql } from "@/lib/db"  // CORRECT
+import { sql } from "@/lib/db"
 
 export default async function ZakatPage() {
   const session = await getServerSession(authOptions)
   if (!session?.user) redirect("/auth/signin")
 
   const profileId = (session.user as any)?.profileId
+
+  // TEMP: Show debug info
   if (!profileId) {
     return (
-      <div className="p-8 text-center text-red-600">
-        Profile setup failed. Please contact admin.
+      <div className="container mx-auto p-8">
+        <pre className="bg-gray-100 p-4 rounded text-sm overflow-auto">
+          {JSON.stringify(session, null, 2)}
+        </pre>
+        <p className="text-red-600 mt-4">
+          Profile ID missing. Check /api/debug-session
+        </p>
       </div>
     )
   }
