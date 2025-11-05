@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth"
 import { redirect } from "next/navigation"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { sql } from "@/lib/db"
+import { v4 as uuidv4 } from 'uuid'  // THIS MUST BE HERE
 
 export default async function ZakatPage() {
   const session = await getServerSession(authOptions)
@@ -15,12 +16,13 @@ export default async function ZakatPage() {
   let profileId: string | null = null
 
   try {
-    // UPSERT: INSERT OR UPDATE
+    const newUuid = uuidv4()  // GENERATE UUID IN NODE.JS
+
     const result = await sql`
       INSERT INTO profiles (
         id, user_id, name, email, phone, gender, is_active
       ) VALUES (
-        gen_random_uuid(),
+        ${newUuid},
         ${userId},
         ${userName},
         ${userEmail},
@@ -37,7 +39,6 @@ export default async function ZakatPage() {
 
     profileId = result.rows[0]?.id
 
-    // Fallback: if no insert, just select
     if (!profileId) {
       const select = await sql`
         SELECT id FROM profiles WHERE user_id = ${userId}
@@ -54,7 +55,7 @@ export default async function ZakatPage() {
       <div className="container mx-auto p-8 text-center">
         <p className="text-orange-600 font-bold">Finalizing profile... Refresh in 5s</p>
         <p className="text-sm text-red-600 mt-4">
-          DB Error: Check Vercel logs.
+          Check Vercel logs.
         </p>
       </div>
     )
