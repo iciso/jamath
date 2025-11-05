@@ -16,10 +16,9 @@ export default async function ZakatPage() {
 
   const profileId = (session.user as any)?.profileId
   if (!profileId) {
-    // This should NEVER happen now
     return (
-      <div className="p-8 text-center">
-        <p className="text-red-600">Profile setup failed. Contact admin.</p>
+      <div className="p-8 text-center text-red-600">
+        Profile setup failed. Please contact admin.
       </div>
     )
   }

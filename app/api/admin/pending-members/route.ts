@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
-import { sql } from "@/lib/neon"
+import { sql } from "@/lib/db"
 
 export async function GET() {
   const session = await getServerSession(authOptions)

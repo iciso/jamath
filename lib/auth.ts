@@ -44,7 +44,6 @@ export const authOptions = {
         }
       } catch (error) {
         console.error("[Auth] Profile sync failed:", error)
-        // Continue without profileId
       }
 
       if (profileId && session.user) {

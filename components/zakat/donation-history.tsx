@@ -3,7 +3,7 @@
 'use client'
 
 import { useEffect, useState } from "react"
-import { sql } from "@/lib/neon"
+import { sql } from "@/lib/db"
 import { Card, CardContent } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 
