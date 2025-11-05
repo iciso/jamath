@@ -8,6 +8,7 @@ import { DonationHistory } from "@/components/zakat/donation-history"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import { sql } from "@/lib/neon"  // ← DIRECT IMPORT
 
 export default async function ZakatPage() {
   const session = await getServerSession(authOptions)
@@ -16,15 +17,15 @@ export default async function ZakatPage() {
   const profileId = (session.user as any)?.profileId
   if (!profileId) redirect("/profile")
 
-  // Fetch total zakat this month
-  const { rows } = await import("@/lib/db").then(m => m.sql)`
-    SELECT COALESCE(SUM(amount), 0) as total
+  // ← DIRECT SQL CALL
+  const [{ total }] = await sql`
+    SELECT COALESCE(SUM(amount), 0)::text as total
     FROM donations
     WHERE status = 'verified'
       AND created_at >= date_trunc('month', CURRENT_DATE)
   `
 
-  const total = Number(rows[0]?.total || 0)
+  const totalAmount = Number(total)
 
   return (
     <main className="container mx-auto px-4 py-8">
@@ -37,13 +38,14 @@ export default async function ZakatPage() {
         </Link>
       </div>
 
-      {/* Live Counter */}
       <Card className="mb-8 bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-200">
         <CardHeader>
           <CardTitle className="text-green-800">This Month's Zakat</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-3xl font-bold text-emerald-700">₹{total.toLocaleString('en-IN')}</p>
+          <p className="text-3xl font-bold text-emerald-700">
+            ₹{totalAmount.toLocaleString('en-IN')}
+          </p>
           <p className="text-sm text-muted-foreground mt-1">
             Verified donations from the community
           </p>
