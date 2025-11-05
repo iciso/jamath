@@ -14,10 +14,36 @@ export default async function ZakatPage() {
   const session = await getServerSession(authOptions)
   if (!session) redirect("/auth/signin")
 
-  const profileId = (session.user as any)?.profileId
-  if (!profileId) redirect("/profile")
+  const userId = (session.user as any)?.id
+  if (!userId) redirect("/auth/signin")
 
-  // ← SAFE: Always return number
+  // ← FETCH OR CREATE PROFILE
+  let profileId: string | null = null
+  try {
+    const [profile] = await sql`
+      SELECT id FROM profiles WHERE user_id = ${userId} LIMIT 1
+    `
+    profileId = profile?.id ?? null
+  } catch (err) {
+    console.error("[Zakat] Profile fetch failed:", err)
+  }
+
+  // ← IF NO PROFILE, CREATE ONE
+  if (!profileId) {
+    try {
+      const [newProfile] = await sql`
+        INSERT INTO profiles (user_id, name, phone, address)
+        VALUES (${userId}, ${session.user?.name || "Member"}, '', '')
+        RETURNING id
+      `
+      profileId = newProfile.id
+    } catch (err) {
+      console.error("[Zakat] Profile creation failed:", err)
+      redirect("/profile") // Fallback
+    }
+  }
+
+  // ← FETCH TOTAL ZAKAT
   let totalAmount = 0
   try {
     const rows = await sql`
@@ -28,8 +54,7 @@ export default async function ZakatPage() {
     `
     totalAmount = Number(rows[0]?.total || 0)
   } catch (err) {
-    console.error("[Zakat Page] SQL Error:", err)
-    totalAmount = 0
+    console.error("[Zakat] SQL Error:", err)
   }
 
   return (
