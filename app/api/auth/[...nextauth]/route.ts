@@ -1,7 +1,7 @@
 // app/api/auth/[...nextauth]/route.ts
 import NextAuth from "next-auth"
 import Google from "next-auth/providers/google"
-import { sql } from "@/lib/db"  // ← MUST BE IMPORTED
+import { sql } from "@/lib/db"
 
 export const authOptions = {
   providers: [
@@ -15,26 +15,39 @@ export const authOptions = {
   session: { strategy: "jwt" },
   callbacks: {
     async jwt({ token, user }) {
-      if (user?.id) {
+      // On first login
+      if (user) {
         token.sub = user.id
+        token.name = user.name
+        token.email = user.email
       }
       return token
     },
     async session({ session, token }) {
-      if (token.sub && session.user) {
+      if (token.sub) {
         session.user.id = token.sub
+        session.user.name = token.name
+        session.user.email = token.email
 
-        // CREATE PROFILE IF NOT EXISTS
+        // GET OR CREATE PROFILE
         try {
           const result = await sql`
             INSERT INTO profiles (user_id, name, phone, address)
-            VALUES (${token.sub}, ${session.user.name || "Member"}, '', '')
-            ON CONFLICT (user_id) DO UPDATE SET name = EXCLUDED.name
+            VALUES (${token.sub}, ${token.name || "Member"}, '', '')
+            ON CONFLICT (user_id) DO NOTHING
             RETURNING id
           `
-          ;(session.user as any).profileId = result.rows[0].id
+
+          const profileId = result.rows[0]?.id || (
+            await sql`SELECT id FROM profiles WHERE user_id = ${token.sub}`
+          ).rows[0]?.id
+
+          if (profileId) {
+            session.user.profileId = profileId
+            token.profileId = profileId  // ← CRITICAL: SAVE IN JWT
+          }
         } catch (error) {
-          console.error("Profile creation failed:", error)
+          console.error("Profile error:", error)
         }
       }
       return session

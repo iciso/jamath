@@ -15,14 +15,14 @@ export default async function ZakatPage() {
   if (!profileId) {
     return (
       <div className="container mx-auto p-8 text-center">
-        <p className="text-orange-600">Creating your profile... Refresh in 10s</p>
+        <p className="text-orange-600">Finalizing profile... Refresh in 5s</p>
       </div>
     )
   }
 
   return (
     <main className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold mb-6">Zakat & Charity</h1>
+      <h1 className="text-2xl font-bold mb-6 text-green-800">Zakat & Charity</h1>
       <p className="text-green-600 mb-4">Profile ID: {profileId}</p>
 
       <div className="grid gap-8 md:grid-cols-2">
