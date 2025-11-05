@@ -12,6 +12,7 @@ export default async function ZakatPage() {
   if (!session?.user) redirect("/signin")
 
   const profileId = (session.user as any).profileId
+
   if (!profileId) {
     return (
       <div className="container mx-auto p-8 text-center">

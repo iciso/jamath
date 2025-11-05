@@ -15,7 +15,7 @@ export const authOptions = {
   session: { strategy: "jwt" },
   callbacks: {
     async jwt({ token, user }) {
-      // On first login
+      // First login: attach user data
       if (user) {
         token.sub = user.id
         token.name = user.name
@@ -24,32 +24,44 @@ export const authOptions = {
       return token
     },
     async session({ session, token }) {
+      // Always attach from token
       if (token.sub) {
         session.user.id = token.sub
         session.user.name = token.name
         session.user.email = token.email
+      }
 
-        // GET OR CREATE PROFILE
+      // GET OR CREATE PROFILE + SAVE IN JWT
+      if (token.sub && !token.profileId) {
         try {
-          const result = await sql`
-            INSERT INTO profiles (user_id, name, phone, address)
-            VALUES (${token.sub}, ${token.name || "Member"}, '', '')
-            ON CONFLICT (user_id) DO NOTHING
-            RETURNING id
+          // Try to get existing profile
+          let result = await sql`
+            SELECT id FROM profiles WHERE user_id = ${token.sub} LIMIT 1
           `
 
-          const profileId = result.rows[0]?.id || (
-            await sql`SELECT id FROM profiles WHERE user_id = ${token.sub}`
-          ).rows[0]?.id
+          let profileId = result.rows[0]?.id
 
-          if (profileId) {
-            session.user.profileId = profileId
-            token.profileId = profileId  // ← CRITICAL: SAVE IN JWT
+          // Create if not exists
+          if (!profileId) {
+            result = await sql`
+              INSERT INTO profiles (user_id, name, phone, address)
+              VALUES (${token.sub}, ${token.name || "Member"}, '', '')
+              RETURNING id
+            `
+            profileId = result.rows[0].id
           }
+
+          // SAVE IN JWT → SURVIVES REFRESH
+          token.profileId = profileId
+          session.user.profileId = profileId
         } catch (error) {
-          console.error("Profile error:", error)
+          console.error("Profile sync failed:", error)
         }
+      } else if (token.profileId) {
+        // Already in JWT → attach to session
+        session.user.profileId = token.profileId
       }
+
       return session
     },
   },
