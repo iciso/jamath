@@ -18,7 +18,7 @@ export default async function ZakatPage() {
   if (!profileId) {
     return (
       <div className="container mx-auto p-8 text-center">
-        <p className="text-red-600">Profile setup in progress. Refresh in 10 seconds.</p>
+        <p className="text-orange-600">Setting up profile... Refresh in 10s</p>
       </div>
     )
   }
