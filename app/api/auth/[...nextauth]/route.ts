@@ -15,7 +15,6 @@ export const authOptions = {
   session: { strategy: "jwt" },
   callbacks: {
     async jwt({ token, user }) {
-      // First login: attach user data
       if (user) {
         token.sub = user.id
         token.name = user.name
@@ -24,24 +23,22 @@ export const authOptions = {
       return token
     },
     async session({ session, token }) {
-      // Always attach from token
+      console.log("SESSION CALLBACK:", { tokenSub: token.sub, tokenProfileId: token.profileId })
+
       if (token.sub) {
         session.user.id = token.sub
         session.user.name = token.name
         session.user.email = token.email
       }
 
-      // GET OR CREATE PROFILE + SAVE IN JWT
       if (token.sub && !token.profileId) {
         try {
-          // Try to get existing profile
           let result = await sql`
             SELECT id FROM profiles WHERE user_id = ${token.sub} LIMIT 1
           `
 
           let profileId = result.rows[0]?.id
 
-          // Create if not exists
           if (!profileId) {
             result = await sql`
               INSERT INTO profiles (user_id, name, phone, address)
@@ -51,17 +48,16 @@ export const authOptions = {
             profileId = result.rows[0].id
           }
 
-          // SAVE IN JWT → SURVIVES REFRESH
           token.profileId = profileId
           session.user.profileId = profileId
         } catch (error) {
-          console.error("Profile sync failed:", error)
+          console.error("Profile error:", error)
         }
       } else if (token.profileId) {
-        // Already in JWT → attach to session
         session.user.profileId = token.profileId
       }
 
+      // CRITICAL: RETURN SESSION
       return session
     },
   },
