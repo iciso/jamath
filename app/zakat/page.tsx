@@ -2,7 +2,7 @@
 import { getServerSession } from "next-auth"
 import { redirect } from "next/navigation"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
-import { sql } from "@/lib/db"
+import { sql } from "@/lib/db"  // THIS LINE WAS MISSING
 
 export default async function ZakatPage() {
   const session = await getServerSession(authOptions)
@@ -40,7 +40,6 @@ export default async function ZakatPage() {
         <p className="text-sm text-green-700">Profile ID: <code className="bg-white px-2 py-1 rounded">{profileId}</code></p>
       </div>
 
-      {/* Your Zakat UI */}
       <div className="text-center">
         <p className="text-gray-600">You can now calculate Zakat and donate.</p>
       </div>
