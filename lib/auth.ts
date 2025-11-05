@@ -23,49 +23,45 @@ export const authOptions = {
   secret: process.env.NEXTAUTH_SECRET,
 
   callbacks: {
-    async session({ session, token }) {
-      console.log("[NextAuth] Session callback triggered", { token })
-
-      if (!token?.sub) {
-        console.log("[NextAuth] No token.sub → skipping")
-        return session
+    async jwt({ token, user }) {
+      // First login: attach user ID
+      if (user?.id) {
+        token.sub = user.id
       }
+      return token
+    },
+    async session({ session, token }) {
+      console.log("[NextAuth] Session callback", { token })
+
+      if (!token?.sub) return session
 
       let profileId: string | null = null
 
       try {
-        console.log("[NextAuth] Querying profile for user:", token.sub)
         const result = await sql`
           SELECT id FROM profiles WHERE user_id = ${token.sub} LIMIT 1
         `
         profileId = result.rows[0]?.id ?? null
-        console.log("[NextAuth] Profile found:", profileId)
 
         if (!profileId) {
-          console.log("[NextAuth] Creating new profile...")
           const newProfile = await sql`
             INSERT INTO profiles (user_id, name, phone, address)
-            VALUES (${token.sub}, ${token.name || "Member"}, '', '')
+            VALUES (${token.sub}, ${session.user?.name || "Member"}, '', '')
             RETURNING id
           `
           profileId = newProfile.rows[0]?.id
-          console.log("[NextAuth] Profile created:", profileId)
         }
       } catch (error) {
-        console.error("[NextAuth] PROFILE SYNC FAILED:", error)
-        // DO NOT THROW
+        console.error("[NextAuth] Profile sync error:", error)
       }
 
       if (profileId && session.user) {
         ;(session.user as any).profileId = profileId
-        console.log("[NextAuth] profileId attached to session:", profileId)
       }
 
       return session
     },
   },
-
-  debug: process.env.NODE_ENV === "development", // Only in dev
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth(authOptions)

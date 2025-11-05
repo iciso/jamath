@@ -16,16 +16,13 @@ export default async function ZakatPage() {
 
   const profileId = (session.user as any)?.profileId
 
-  // TEMP: Show debug info
   if (!profileId) {
     return (
-      <div className="container mx-auto p-8">
-        <pre className="bg-gray-100 p-4 rounded text-sm overflow-auto">
-          {JSON.stringify(session, null, 2)}
-        </pre>
-        <p className="text-red-600 mt-4">
-          Profile ID missing. Check /api/debug-session
-        </p>
+      <div className="container mx-auto p-8 text-center">
+        <p className="text-red-600">Profile setup failed. Please sign out and sign in again.</p>
+        <Button asChild className="mt-4">
+          <a href="/api/auth/signout">Sign Out</a>
+        </Button>
       </div>
     )
   }
@@ -39,9 +36,7 @@ export default async function ZakatPage() {
         AND created_at >= date_trunc('month', CURRENT_DATE)
     `
     totalAmount = Number(result.rows[0]?.total || 0)
-  } catch (e) {
-    console.error("Total fetch failed:", e)
-  }
+  } catch (e) {}
 
   return (
     <main className="container mx-auto px-4 py-8">
