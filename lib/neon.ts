@@ -1,8 +1,8 @@
 // lib/neon.ts
-import { neon } from '@neondatabase/serverless'
-import { drizzle } from 'drizzle-orm/neon-http'
+import { neon } from "@neondatabase/serverless"
 
-const sql = neon(process.env.DATABASE_URL!)
-const db = drizzle(sql)
+if (!process.env.DATABASE_URL) {
+  throw new Error("DATABASE_URL is missing in environment variables")
+}
 
-export { sql, db }
+export const sql = neon(process.env.DATABASE_URL)
