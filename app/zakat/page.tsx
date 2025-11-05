@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth"
 import { redirect } from "next/navigation"
 import { authOptions } from "@/app/api/auth/[...nextauth]/route"
 import { sql } from "@/lib/db"
+import { v4 as uuidv4 } from 'uuid'  // ← ADD THIS
 
 export default async function ZakatPage() {
   const session = await getServerSession(authOptions)
@@ -15,12 +16,14 @@ export default async function ZakatPage() {
   let profileId: string | null = null
 
   try {
-    // UPSERT USING UUID + user_id
+    // GENERATE UUID IN CODE (NO gen_random_uuid)
+    const newUuid = uuidv4()
+
     const result = await sql`
       INSERT INTO profiles (
         id, user_id, name, email, phone, gender, is_active
       ) VALUES (
-        gen_random_uuid(),
+        ${newUuid},
         ${userId},
         ${userName},
         ${userEmail},
@@ -37,7 +40,6 @@ export default async function ZakatPage() {
 
     profileId = result.rows[0]?.id
 
-    // Fallback: if no insert, just select
     if (!profileId) {
       const select = await sql`
         SELECT id FROM profiles WHERE user_id = ${userId} AND is_active = true
@@ -47,18 +49,16 @@ export default async function ZakatPage() {
 
   } catch (error: any) {
     console.error("Profile upsert failed:", error.message)
-    console.error("Full error:", error)
+    console.error("Stack:", error.stack)
   }
 
   if (!profileId) {
     return (
       <div className="container mx-auto p-8 text-center">
         <p className="text-orange-600 font-bold">Finalizing profile... Refresh in 5s</p>
-        <pre className="mt-4 text-xs bg-red-100 p-3 rounded max-w-md mx-auto">
-          userId: {userId}
-          <br />
-          Error: {error?.message || "Unknown"}
-        </pre>
+        <p className="text-sm text-red-600 mt-4">
+          Check Vercel logs for error details.
+        </p>
       </div>
     )
   }
