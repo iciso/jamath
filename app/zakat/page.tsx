@@ -12,12 +12,34 @@ import { sql } from "@/lib/db"
 
 export default async function ZakatPage() {
   const session = await getServerSession(authOptions)
-  if (!session) redirect("/auth/signin")
+
+  // === AUTH CHECK ===
+  if (!session?.user) {
+    redirect("/auth/signin")
+  }
 
   const profileId = (session.user as any)?.profileId
-  if (!profileId) redirect("/auth/signin")  // Should never happen
 
-  // Fetch total — with fallback
+  // === PROFILE CHECK WITH FRIENDLY FALLBACK ===
+  if (!profileId) {
+    return (
+      <main className="container mx-auto px-4 py-8 text-center">
+        <h1 className="text-2xl font-bold mb-4">Zakat & Charity</h1>
+        <Card className="max-w-md mx-auto border-amber-200 bg-amber-50">
+          <CardContent className="pt-6">
+            <p className="text-amber-800 mb-4">
+              Your profile is being set up. This usually takes a few seconds.
+            </p>
+            <Button asChild>
+              <Link href="/profile">Complete Profile →</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </main>
+    )
+  }
+
+  // === FETCH TOTAL ZAKAT (SAFE) ===
   let totalAmount = 0
   try {
     const result = await sql`
@@ -27,11 +49,12 @@ export default async function ZakatPage() {
         AND created_at >= date_trunc('month', CURRENT_DATE)
     `
     totalAmount = Number(result.rows[0]?.total || 0)
-  } catch (err) {
-    console.error("Failed to fetch total:", err)
-    // Don't break page
+  } catch (error) {
+    console.error("Failed to fetch total zakat:", error)
+    // Continue — don't break page
   }
 
+  // === MAIN UI ===
   return (
     <main className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-6">
@@ -58,7 +81,7 @@ export default async function ZakatPage() {
         </CardContent>
       </Card>
 
-      {/* Main Features */}
+      {/* Features */}
       <div className="grid gap-8 md:grid-cols-2">
         <Card>
           <CardHeader><CardTitle>Zakat Calculator</CardTitle></CardHeader>
