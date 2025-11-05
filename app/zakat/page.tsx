@@ -8,15 +8,26 @@ export default async function ZakatPage() {
   const session = await getServerSession(authOptions)
   if (!session?.user) redirect("/signin")
 
-  const userId = session.user.id
+  const userId = session.user.id as string
 
   let profileId: string | null = null
+
   try {
-    // Create or get profile
+    // UPSERT: INSERT OR UPDATE
     const result = await sql`
-      INSERT INTO profiles (user_id, name, phone, address)
-      VALUES (${userId}, ${session.user.name || "Member"}, '', '')
-      ON CONFLICT (user_id) DO NOTHING
+      INSERT INTO profiles (id, user_id, name, phone, address, email, is_active)
+      VALUES (
+        gen_random_uuid(),
+        ${userId},
+        ${session.user.name || "Member"},
+        '',
+        '',
+        ${session.user.email},
+        true
+      )
+      ON CONFLICT (user_id) DO UPDATE SET
+        name = EXCLUDED.name,
+        email = EXCLUDED.email
       RETURNING id
     `
 
@@ -28,7 +39,7 @@ export default async function ZakatPage() {
     }
 
   } catch (error: any) {
-    console.error("DB ERROR:", error.message)
+    console.error("Profile upsert failed:", error.message)
   }
 
   if (!profileId) {
@@ -36,7 +47,7 @@ export default async function ZakatPage() {
       <div className="container mx-auto p-8 text-center">
         <p className="text-orange-600 font-bold">Finalizing profile... Refresh in 5s</p>
         <p className="text-sm text-red-600 mt-4">
-          If this persists, the <code>profiles</code> table may be missing.
+          DB Error: Check Vercel logs for details.
         </p>
       </div>
     )
