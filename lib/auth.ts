@@ -3,13 +3,13 @@ import NextAuth from "next-auth"
 import Google from "next-auth/providers/google"
 import { sql } from "@/lib/db"
 
-// === HARD-CODE ALL VALUES (FORCE) ===
+// === HARD-CODED — NO ENV VARS ===
 const NEXTAUTH_SECRET = "PtMVsl0yXjXlZHZKiG2yZH0PSusIVK8PY4I0ZkYx5dU="
 const NEXTAUTH_URL = "https://v0-masjid-community-app.vercel.app"
 const GOOGLE_CLIENT_ID = "215508504819-l9sgava2j04ie992cpqie3mmpt93kugb.apps.googleusercontent.com"
 const GOOGLE_CLIENT_SECRET = "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"
 
-console.log("NextAuth: ALL VALUES HARD-CODED")
+console.log("NextAuth: HARD-CODED VALUES LOADED")
 
 export const authOptions = {
   providers: [
