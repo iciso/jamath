@@ -8,7 +8,7 @@ import { DonationHistory } from "@/components/zakat/donation-history"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { sql } from "@/lib/neon"  // ← DIRECT IMPORT
+import { sql } from "@/lib/neon"
 
 export default async function ZakatPage() {
   const session = await getServerSession(authOptions)
@@ -17,15 +17,16 @@ export default async function ZakatPage() {
   const profileId = (session.user as any)?.profileId
   if (!profileId) redirect("/profile")
 
-  // ← DIRECT SQL CALL
-  const [{ total }] = await sql`
+  // ← CORRECT: sql returns array of rows
+  const rows = await sql`
     SELECT COALESCE(SUM(amount), 0)::text as total
     FROM donations
     WHERE status = 'verified'
       AND created_at >= date_trunc('month', CURRENT_DATE)
   `
 
-  const totalAmount = Number(total)
+  // ← CORRECT: Extract from first row
+  const totalAmount = Number(rows[0]?.total || 0)
 
   return (
     <main className="container mx-auto px-4 py-8">
