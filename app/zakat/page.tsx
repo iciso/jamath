@@ -17,8 +17,10 @@ export default async function ZakatPage() {
   const userId = (session.user as any)?.id
   if (!userId) redirect("/auth/signin")
 
-  // ← FETCH OR CREATE PROFILE
   let profileId: string | null = null
+  let totalAmount = 0
+
+  // ——— PROFILE: FETCH OR CREATE ———
   try {
     const [profile] = await sql`
       SELECT id FROM profiles WHERE user_id = ${userId} LIMIT 1
@@ -28,7 +30,6 @@ export default async function ZakatPage() {
     console.error("[Zakat] Profile fetch failed:", err)
   }
 
-  // ← IF NO PROFILE, CREATE ONE
   if (!profileId) {
     try {
       const [newProfile] = await sql`
@@ -39,12 +40,11 @@ export default async function ZakatPage() {
       profileId = newProfile.id
     } catch (err) {
       console.error("[Zakat] Profile creation failed:", err)
-      redirect("/profile") // Fallback
+      // Do NOT redirect — show page with fallback
     }
   }
 
-  // ← FETCH TOTAL ZAKAT
-  let totalAmount = 0
+  // ——— TOTAL ZAKAT THIS MONTH ———
   try {
     const rows = await sql`
       SELECT COALESCE(SUM(amount), 0)::text as total
@@ -54,7 +54,8 @@ export default async function ZakatPage() {
     `
     totalAmount = Number(rows[0]?.total || 0)
   } catch (err) {
-    console.error("[Zakat] SQL Error:", err)
+    console.error("[Zakat] Total fetch failed:", err)
+    totalAmount = 0
   }
 
   return (
@@ -68,6 +69,7 @@ export default async function ZakatPage() {
         </Link>
       </div>
 
+      {/* LIVE COUNTER */}
       <Card className="mb-8 bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-200">
         <CardHeader>
           <CardTitle className="text-green-800">This Month's Zakat</CardTitle>
@@ -82,24 +84,46 @@ export default async function ZakatPage() {
         </CardContent>
       </Card>
 
+      {/* MAIN GRID */}
       <div className="grid gap-8 md:grid-cols-2">
         <Card>
-          <CardHeader><CardTitle>Zakat Calculator</CardTitle></CardHeader>
-          <CardContent><ZakatCalculator /></CardContent>
+          <CardHeader>
+            <CardTitle>Zakat Calculator</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ZakatCalculator />
+          </CardContent>
         </Card>
 
         <Card>
-          <CardHeader><CardTitle>Donate Now</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle>Donate Now</CardTitle>
+          </CardHeader>
           <CardContent>
-            <DonationForm profileId={profileId} />
+            {profileId ? (
+              <DonationForm profileId={profileId} />
+            ) : (
+              <p className="text-center text-muted-foreground">
+                Setting up your profile...
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>
 
+      {/* HISTORY */}
       <Card className="mt-8">
-        <CardHeader><CardTitle>Your Donation History</CardTitle></CardHeader>
+        <CardHeader>
+          <CardTitle>Your Donation History</CardTitle>
+        </CardHeader>
         <CardContent>
-          <DonationHistory profileId={profileId} />
+          {profileId ? (
+            <DonationHistory profileId={profileId} />
+          ) : (
+            <p className="text-center text-muted-foreground">
+              Profile is being created...
+            </p>
+          )}
         </CardContent>
       </Card>
     </main>
