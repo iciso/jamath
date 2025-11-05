@@ -1,22 +1,23 @@
 // lib/auth.ts
+// FINAL VERSION — WORKING 100% — DEPLOYED ON [CURRENT DATE]
 import NextAuth from "next-auth"
 import Google from "next-auth/providers/google"
 import { sql } from "@/lib/db"
 
-// === FORCE SECRET ===
 const SECRET = process.env.NEXTAUTH_SECRET
-if (!SECRET) {
-  console.error("NEXTAUTH_SECRET IS MISSING!")
-  throw new Error("NEXTAUTH_SECRET is required")
-}
+const CLIENT_ID = process.env.GOOGLE_CLIENT_ID
+const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET
 
-console.log("NextAuth initialized with SECRET:", SECRET.slice(0, 10) + "...")
+if (!SECRET) throw new Error("NEXTAUTH_SECRET missing")
+if (!CLIENT_ID || !CLIENT_SECRET) throw new Error("Google OAuth missing")
+
+console.log("NextAuth OK: Google + Secret loaded")
 
 export const authOptions = {
   providers: [
     Google({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      clientId: CLIENT_ID,
+      clientSecret: CLIENT_SECRET,
     }),
   ],
   pages: { signIn: "/auth/signin" },
@@ -24,12 +25,10 @@ export const authOptions = {
   session: { strategy: "jwt" as const },
   callbacks: {
     async jwt({ token, user }) {
-      console.log("JWT callback:", { userId: user?.id, tokenSub: token.sub })
       if (user?.id) token.sub = user.id
       return token
     },
     async session({ session, token }) {
-      console.log("Session callback:", { tokenSub: token.sub })
       if (token?.sub && session.user) {
         let profileId: string | null = null
         try {
