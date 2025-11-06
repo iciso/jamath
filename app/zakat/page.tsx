@@ -8,7 +8,7 @@ import { DonationHistory } from "@/components/zakat/donation-history"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { sql } from "@/lib/neon"
+import { sql } from "@/lib/db"
 import { v4 as uuidv4 } from 'uuid'
 
 export const revalidate = 0
