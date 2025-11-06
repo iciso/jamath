@@ -1,14 +1,14 @@
+// components/zakat/calculator.tsx
 "use client"
 
 import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
 
-const NISAB_GOLD = 85 // grams
+const NISAB_GOLD = 85    // grams
 const NISAB_SILVER = 595 // grams
-const GOLD_PRICE = 7500 // INR per gram (update via API later)
-const SILVER_PRICE = 90 // INR per gram
+const GOLD_PRICE = 7500  // INR per gram
+const SILVER_PRICE = 90  // INR per gram
 
 export function ZakatCalculator() {
   const [assets, setAssets] = useState({
@@ -58,13 +58,15 @@ export function ZakatCalculator() {
           </div>
         </div>
 
-        <div className="p-4 bg-green-50 rounded-lg space-y-2">
-          <p>Total Wealth: <strong>₹{totalWealth.toFixed(2)}</strong></p>
-          <p>Nisab Threshold: <strong>₹{nisab.toFixed(2)}</strong></p>
+        <div className="p-4 bg-green-50 rounded-lg space-y-2 border border-green-200">
+          <p><strong>Total Wealth:</strong> ₹{totalWealth.toFixed(2)}</p>
+          <p><strong>Nisab Threshold:</strong> ₹{nisab.toFixed(2)}</p>
           <p className="text-lg font-bold text-green-700">
             Zakat Due: <span className="text-2xl">₹{zakat.toFixed(2)}</span>
           </p>
-          {totalWealth < nisab && <p className="text-sm text-amber-700">No Zakat due (below Nisab)</p>}
+          {totalWealth < nisab && (
+            <p className="text-sm text-amber-700">No Zakat due (below Nisab)</p>
+          )}
         </div>
       </CardContent>
     </Card>
