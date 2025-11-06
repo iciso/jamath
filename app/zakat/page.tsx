@@ -8,43 +8,69 @@ import { DonationHistory } from "@/components/zakat/donation-history"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { sql } from "@/lib/db"
+import { sql } from "@/lib/neon"
+import { v4 as uuidv4 } from 'uuid'
 
 export const revalidate = 0
 export const dynamic = 'force-dynamic'
 
 export default async function ZakatPage() {
   const session = await getServerSession(authOptions)
-  if (!session?.user) redirect("/auth/signin")
+  if (!session) redirect("/auth/signin")
 
-  let profileId = (session.user as any)?.profileId
+  const userId = session.user.id as string
+  const userName = session.user.name || "Member"
+  const userEmail = session.user.email || ""
 
-  // CALL EXISTING /api/profile TO SYNC
+  let profileId: string | null = null
+
+  try {
+    const newUuid = uuidv4()
+
+    const result = await sql`
+      INSERT INTO profiles (
+        id, user_id, name, email, phone
+      ) VALUES (
+        ${newUuid},
+        ${userId},
+        ${userName},
+        ${userEmail},
+        ''
+      )
+      ON CONFLICT (user_id) DO UPDATE SET
+        name = EXCLUDED.name,
+        email = EXCLUDED.email
+      RETURNING id
+    `
+
+    profileId = result.rows[0]?.id
+
+  } catch (error: any) {
+    console.error("Profile upsert failed:", error.message)
+  }
+
   if (!profileId) {
     try {
-      const res = await fetch(`${process.env.NEXTAUTH_URL || ''}/api/profile`, {
-        method: 'GET',
-        cache: 'no-store',
-      })
-      if (res.ok) {
-        const data = await res.json()
-        profileId = data.profileId
-      }
-    } catch (err) {
-      console.error("[Zakat] Profile sync failed:", err)
+      const result = await sql`
+        SELECT id FROM profiles WHERE user_id = ${userId}
+      `
+      profileId = result.rows[0]?.id
+    } catch (error: any) {
+      console.error("Profile fetch failed:", error.message)
     }
   }
 
   if (!profileId) {
     return (
       <div className="container mx-auto p-8 text-center">
-        <p className="text-orange-600 font-bold">Finalizing your profile...</p>
-        <p className="text-sm text-gray-600 mt-2">Please wait...</p>
+        <p className="text-orange-600 font-bold">Unable to set up profile</p>
+        <p className="text-sm text-red-600 mt-4">
+          Please check server logs for error.
+        </p>
       </div>
     )
   }
 
-  // FETCH TOTAL
   let totalAmount = 0
   try {
     const result = await sql`
