@@ -1,19 +1,17 @@
 // app/api/donation-heads/route.ts
-import { NextResponse } from "next/server"
 import { sql } from "@/lib/db"
+import { NextResponse } from "next/server"
 
 export async function GET() {
   try {
-    const sql = sql()
     const heads = await sql`
-      SELECT id, slug, name, description, is_zakat, is_fitr, is_qurabani
-      FROM donation_heads
-      WHERE active = true
+      SELECT id, name, is_zakat 
+      FROM donation_heads 
       ORDER BY name
     `
     return NextResponse.json(heads)
-  } catch (err) {
-    console.error("[API] donation-heads error:", err)
-    return NextResponse.json({ error: "Failed to fetch" }, { status: 500 })
+  } catch (error: any) {
+    console.error("[API] donation-heads error:", error)
+    return NextResponse.json({ error: "Failed to load causes" }, { status: 500 })
   }
 }

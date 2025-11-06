@@ -54,12 +54,18 @@ export function DonationForm({ profileId }: { profileId: string }) {
         <SelectTrigger>
           <SelectValue placeholder="Select cause" />
         </SelectTrigger>
-        <SelectContent>
-          {heads.map((h: any) => (
-            <SelectItem key={h.id} value={h.id}>
-              {h.name} {h.is_zakat && "(Zakat)"}
+           <SelectContent>
+          {Array.isArray(heads) && heads.length > 0 ? (
+            heads.map((h: any) => (
+              <SelectItem key={h.id} value={h.id}>
+                {h.name} {h.is_zakat && "(Zakat)"}
+              </SelectItem>
+            ))
+          ) : (
+            <SelectItem value="" disabled>
+              {headsError ? "Failed to load" : "Loading..."}
             </SelectItem>
-          ))}
+          )}
         </SelectContent>
       </Select>
 
