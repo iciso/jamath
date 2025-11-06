@@ -29,6 +29,8 @@ export default async function ZakatPage() {
     )
   }
 
+  console.log("USER ID FROM SESSION:", userId)  // ← DEBUG
+
   const userName = session.user.name || "Member"
   const userEmail = session.user.email || ""
 
@@ -41,6 +43,7 @@ export default async function ZakatPage() {
 
     if (existing.rows.length > 0) {
       profileId = existing.rows[0].id
+      console.log("Profile found:", profileId)
     } else {
       const newUuid = uuidv4()
       const result = await sql`
@@ -49,6 +52,7 @@ export default async function ZakatPage() {
         RETURNING id
       `
       profileId = result.rows[0].id
+      console.log("Profile created:", profileId)
     }
   } catch (error: any) {
     console.error("[Zakat] Profile setup failed:", error.message)
