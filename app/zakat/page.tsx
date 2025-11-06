@@ -1,5 +1,4 @@
 // app/zakat/page.tsx
-
 import { getServerSession } from "next-auth"
 import { redirect } from "next/navigation"
 import { authOptions } from "@/lib/auth"
@@ -19,16 +18,36 @@ export default async function ZakatPage() {
   const session = await getServerSession(authOptions)
   if (!session?.user) redirect("/auth/signin")
 
-  // ← profileId is auto-created in lib/auth.ts callback
   const profileId = (session.user as any)?.profileId
+
   if (!profileId) {
     return (
       <div className="container mx-auto p-8 text-center">
         <p className="text-orange-600 font-bold">Setting up your profile...</p>
-        <p className="text-sm text-gray-600 mt-2">Please wait 5 seconds and refresh.</p>
+        <p className="text-sm text-gray-600 mt-2">
+          Redirecting in <span id="countdown">5</span> seconds...
+        </p>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              let seconds = 5;
+              const countdown = document.getElementById('countdown');
+              const interval = setInterval(() => {
+                seconds--;
+                countdown.textContent = seconds;
+                if (seconds <= 0) {
+                  clearInterval(interval);
+                  window.location.reload();
+                }
+              }, 1000);
+            `,
+          }}
+        />
       </div>
     )
   }
+
+  // ... rest of your code (totalAmount, return JSX)
 
   // ← FETCH TOTAL ZAKAT
   let totalAmount = 0
