@@ -8,7 +8,7 @@ import { DonationHistory } from "@/components/zakat/donation-history"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { sql } from "@/lib/db"  // ← CORRECT
+import { sql } from "@/lib/db"
 import { v4 as uuidv4 } from 'uuid'
 
 export const revalidate = 0
@@ -18,14 +18,23 @@ export default async function ZakatPage() {
   const session = await getServerSession(authOptions)
   if (!session?.user) redirect("/auth/signin")
 
-  const userId = session.user.id as string
+  const userId = session.user.id
+  if (!userId) {
+    console.error("USER ID MISSING IN SESSION")
+    return (
+      <div className="container mx-auto p-8 text-center">
+        <p className="text-red-600 font-bold">Authentication Error</p>
+        <p className="text-sm text-gray-600 mt-2">Please sign out and sign in again.</p>
+      </div>
+    )
+  }
+
   const userName = session.user.name || "Member"
   const userEmail = session.user.email || ""
 
   let profileId: string | null = null
 
   try {
-    // STEP 1: Try to fetch existing profile
     const existing = await sql`
       SELECT id FROM profiles WHERE user_id = ${userId} LIMIT 1
     `
@@ -33,7 +42,6 @@ export default async function ZakatPage() {
     if (existing.rows.length > 0) {
       profileId = existing.rows[0].id
     } else {
-      // STEP 2: Create new profile with UUID
       const newUuid = uuidv4()
       const result = await sql`
         INSERT INTO profiles (id, user_id, name, email, phone, address)
@@ -50,14 +58,11 @@ export default async function ZakatPage() {
     return (
       <div className="container mx-auto p-8 text-center">
         <p className="text-red-600 font-bold">Failed to set up profile</p>
-        <p className="text-sm text-gray-600 mt-2">
-          Check Vercel logs for details.
-        </p>
+        <p className="text-sm text-gray-600 mt-2">Check Vercel logs.</p>
       </div>
     )
   }
 
-  // FETCH TOTAL
   let totalAmount = 0
   try {
     const result = await sql`

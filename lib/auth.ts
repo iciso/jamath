@@ -3,7 +3,7 @@ import NextAuth from "next-auth"
 import Google from "next-auth/providers/google"
 import { sql } from "@/lib/db"
 
-// === HARD-CODED — NO ENV VARS ===
+// === HARD-CODED — AS REQUIRED BY VERCEL + BROWSER DEBUG ===
 const NEXTAUTH_SECRET = "PtMVsl0yXjXlZHZKiG2yZH0PSusIVK8PY4I0ZkYx5dU="
 const NEXTAUTH_URL = "https://v0-masjid-community-app.vercel.app"
 const GOOGLE_CLIENT_ID = "215508504819-l9sgava2j04ie992cpqie3mmpt93kugb.apps.googleusercontent.com"
@@ -24,11 +24,17 @@ export const authOptions = {
   session: { strategy: "jwt" as const },
   callbacks: {
     async jwt({ token, user }) {
-      if (user?.id) token.sub = user.id
+      if (user?.id) {
+        token.sub = user.id
+        token.id = user.id  // ← ADD THIS
+      }
       return token
     },
     async session({ session, token }) {
-      if (token?.sub && session.user) {
+      if (token?.sub) {
+        // SET user.id IN SESSION
+        session.user.id = token.sub  // ← CRITICAL
+
         let profileId: string | null = null
         try {
           const result = await sql`
