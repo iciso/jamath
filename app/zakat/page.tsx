@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { sql } from "@/lib/db"
 
-// FORCE FRESH DATA
 export const revalidate = 0
 export const dynamic = 'force-dynamic'
 
@@ -18,38 +17,34 @@ export default async function ZakatPage() {
   const session = await getServerSession(authOptions)
   if (!session?.user) redirect("/auth/signin")
 
-  const profileId = (session.user as any)?.profileId
+  let profileId = (session.user as any)?.profileId
+
+  // CALL EXISTING /api/profile TO SYNC
+  if (!profileId) {
+    try {
+      const res = await fetch(`${process.env.NEXTAUTH_URL || ''}/api/profile`, {
+        method: 'GET',
+        cache: 'no-store',
+      })
+      if (res.ok) {
+        const data = await res.json()
+        profileId = data.profileId
+      }
+    } catch (err) {
+      console.error("[Zakat] Profile sync failed:", err)
+    }
+  }
 
   if (!profileId) {
     return (
       <div className="container mx-auto p-8 text-center">
-        <p className="text-orange-600 font-bold">Setting up your profile...</p>
-        <p className="text-sm text-gray-600 mt-2">
-          Redirecting in <span id="countdown">5</span> seconds...
-        </p>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              let seconds = 5;
-              const countdown = document.getElementById('countdown');
-              const interval = setInterval(() => {
-                seconds--;
-                countdown.textContent = seconds;
-                if (seconds <= 0) {
-                  clearInterval(interval);
-                  window.location.reload();
-                }
-              }, 1000);
-            `,
-          }}
-        />
+        <p className="text-orange-600 font-bold">Finalizing your profile...</p>
+        <p className="text-sm text-gray-600 mt-2">Please wait...</p>
       </div>
     )
   }
 
-  // ... rest of your code (totalAmount, return JSX)
-
-  // ← FETCH TOTAL ZAKAT
+  // FETCH TOTAL
   let totalAmount = 0
   try {
     const result = await sql`
