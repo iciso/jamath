@@ -1,7 +1,8 @@
 // app/zakat/page.tsx
+
 import { getServerSession } from "next-auth"
 import { redirect } from "next/navigation"
-import { authOptions } from "@/lib/auth"  // ← CORRECT ONE
+import { authOptions } from "@/lib/auth"
 import { ZakatCalculator } from "@/components/zakat/calculator"
 import { DonationForm } from "@/components/zakat/donation-form"
 import { DonationHistory } from "@/components/zakat/donation-history"
@@ -9,6 +10,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { sql } from "@/lib/db"
+
+// FORCE FRESH DATA
+export const revalidate = 0
+export const dynamic = 'force-dynamic'
 
 export default async function ZakatPage() {
   const session = await getServerSession(authOptions)
