@@ -8,10 +8,10 @@ export default function SignIn() {
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
           <h2 className="text-3xl font-bold">Masjid Community App</h2>
-          <p className="mt-2 text-gray-600">Sign in to continue</p>
+          <p className="mt-2 text-gray-600">Sign in to donate Zakat</p>
         </div>
         <button
-          onClick={() => signIn("google", { callbackUrl: "/profile" })}
+          onClick={() => signIn("google", { callbackUrl: "/zakat" })}  // ← TO /zakat
           className="w-full flex justify-center items-center gap-3 rounded-md bg-blue-600 px-4 py-3 text-white font-medium hover:bg-blue-700"
         >
           <svg className="h-5 w-5" viewBox="0 0 24 24">
