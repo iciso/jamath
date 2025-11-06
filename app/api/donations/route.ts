@@ -7,48 +7,109 @@ import { sql } from "@/lib/db"
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-
-    const { profileId, headId, amount, method, transactionId, notes } = await req.json()
-    if (!profileId || !headId || !amount || !method) {
-      return NextResponse.json({ error: "Missing fields" }, { status: 400 })
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const sql = sql()
-    const result = await sql`
-      INSERT INTO donations (profile_id, head_id, amount, payment_method, transaction_id, notes)
-      VALUES (${profileId}, ${headId}, ${amount}, ${method}, ${transactionId}, ${notes})
-      RETURNING id
+    const googleId = session.user.id
+    const { headId, amount, method, transactionId, notes } = await req.json()
+
+    if (!headId || !amount || amount <= 0 || !method) {
+      return NextResponse.json({ error: "Missing or invalid fields" }, { status: 400 })
+    }
+
+    // Step 1: Get user.id (UUID) from google_id
+    const [user] = await sql`
+      SELECT id FROM users WHERE google_id = ${googleId} LIMIT 1
+    `
+    if (!user) {
+      return NextResponse.json({ error: "User not found. Please complete profile." }, { status: 404 })
+    }
+
+    // Step 2: Get profile.id (UUID) from user_id
+    const [profile] = await sql`
+      SELECT id FROM profiles WHERE user_id = ${user.id} LIMIT 1
+    `
+    if (!profile) {
+      return NextResponse.json({ error: "Profile not complete. Please fill your details." }, { status: 400 })
+    }
+
+    // Step 3: Insert donation
+    const [donation] = await sql`
+      INSERT INTO donations (
+        profile_id, head_id, amount, payment_method, 
+        transaction_id, notes, status
+      )
+      VALUES (
+        ${profile.id}, ${headId}, ${amount}, ${method},
+        ${transactionId || null}, ${notes || null}, 'completed'
+      )
+      RETURNING id, amount, created_at, head_id
     `
 
-    return NextResponse.json({ success: true, donationId: result[0].id })
-  } catch (err) {
+    // Optional: Fetch head name for response
+    const [head] = await sql`
+      SELECT name, is_zakat FROM donation_heads WHERE id = ${headId}
+    `
+
+    return NextResponse.json({
+      success: true,
+      donationId: donation.id,
+      amount: donation.amount,
+      head: head?.name || "Unknown",
+      isZakat: head?.is_zakat || false,
+      message: head?.is_zakat 
+        ? "Zakat accepted! May Allah reward you immensely."
+        : "Donation received. JazakAllah khairan."
+    })
+
+  } catch (err: any) {
     console.error("[API] donation submit error:", err)
-    return NextResponse.json({ error: "Failed to submit" }, { status: 500 })
+    return NextResponse.json(
+      { error: "Failed to submit donation", details: err.message },
+      { status: 500 }
+    )
   }
 }
 
 export async function GET(req: Request) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
 
-    const { searchParams } = new URL(req.url)
-    const profileId = searchParams.get("profileId")
-    if (!profileId) return NextResponse.json({ error: "profileId required" }, { status: 400 })
+    const googleId = session.user.id
 
-    const sql = sql()
+    // Get profile_id via google_id → users → profiles
+    const [user] = await sql`
+      SELECT id FROM users WHERE google_id = ${googleId} LIMIT 1
+    `
+    if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 })
+
+    const [profile] = await sql`
+      SELECT id FROM profiles WHERE user_id = ${user.id} LIMIT 1
+    `
+    if (!profile) return NextResponse.json({ error: "Profile not found" }, { status: 400 })
+
     const donations = await sql`
-      SELECT d.*, h.name as head_name, h.is_zakat
+      SELECT 
+        d.id, d.amount, d.payment_method, d.transaction_id,
+        d.notes, d.status, d.created_at,
+        h.name AS head_name, h.is_zakat
       FROM donations d
       JOIN donation_heads h ON h.id = d.head_id
-      WHERE d.profile_id = ${profileId}
+      WHERE d.profile_id = ${profile.id}
       ORDER BY d.created_at DESC
     `
 
     return NextResponse.json(donations)
-  } catch (err) {
+
+  } catch (err: any) {
     console.error("[API] donations list error:", err)
-    return NextResponse.json({ error: "Failed to fetch" }, { status: 500 })
+    return NextResponse.json(
+      { error: "Failed to fetch donations" },
+      { status: 500 }
+    )
   }
 }
