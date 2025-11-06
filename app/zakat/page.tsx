@@ -18,18 +18,12 @@ export default async function ZakatPage() {
   const session = await getServerSession(authOptions)
   if (!session?.user) redirect("/auth/signin")
 
-  const userId = session.user.id
+    const userId = session.user.id
   if (!userId) {
     console.error("USER ID MISSING IN SESSION")
-    return (
-      <div className="container mx-auto p-8 text-center">
-        <p className="text-red-600 font-bold">Authentication Error</p>
-        <p className="text-sm text-gray-600 mt-2">Please sign out and sign in again.</p>
-      </div>
-    )
+    return <div>Authentication Error</div>
   }
-
-  console.log("USER ID FROM SESSION:", userId)  // ← DEBUG
+  console.log("USER ID FROM SESSION:", userId)
 
   const userName = session.user.name || "Member"
   const userEmail = session.user.email || ""

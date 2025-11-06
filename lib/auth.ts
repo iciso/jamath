@@ -16,6 +16,13 @@ export const authOptions = {
     Google({
       clientId: GOOGLE_CLIENT_ID,
       clientSecret: GOOGLE_CLIENT_SECRET,
+      authorization: {
+        params: {
+          prompt: "consent",
+          access_type: "offline",
+          response_type: "code",
+        },
+      },
     }),
   ],
   pages: { signIn: "/auth/signin" },
@@ -24,15 +31,24 @@ export const authOptions = {
   session: { strategy: "jwt" as const },
   callbacks: {
     async jwt({ token, account, profile }) {
-      // Google returns `sub` in profile
-      if (account?.provider === "google" && profile?.sub) {
-        token.sub = profile.sub  // ← USE GOOGLE'S `sub`
+      if (account && account.provider === "google") {
+        // Extract sub from id_token (JWT)
+        if (account.id_token) {
+          try {
+            const payload = JSON.parse(Buffer.from(account.id_token.split('.')[1], 'base64').toString())
+            if (payload.sub) {
+              token.sub = payload.sub
+            }
+          } catch (e) {
+            console.error("Failed to parse id_token:", e)
+          }
+        }
       }
       return token
     },
     async session({ session, token }) {
       if (token?.sub) {
-        session.user.id = token.sub  // ← SET AS userId
+        session.user.id = token.sub  // ← FINAL: userId from Google sub
         let profileId: string | null = null
         try {
           const result = await sql`
