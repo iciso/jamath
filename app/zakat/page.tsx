@@ -8,7 +8,7 @@ import { DonationHistory } from "@/components/zakat/donation-history"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { sql } from "@/lib/db"
+import { sql } from "@/lib/db"  // ← CORRECT
 import { v4 as uuidv4 } from 'uuid'
 
 export const revalidate = 0
@@ -16,7 +16,7 @@ export const dynamic = 'force-dynamic'
 
 export default async function ZakatPage() {
   const session = await getServerSession(authOptions)
-  if (!session) redirect("/auth/signin")
+  if (!session?.user) redirect("/auth/signin")
 
   const userId = session.user.id as string
   const userName = session.user.name || "Member"
@@ -25,52 +25,39 @@ export default async function ZakatPage() {
   let profileId: string | null = null
 
   try {
-    const newUuid = uuidv4()
-
-    const result = await sql`
-      INSERT INTO profiles (
-        id, user_id, name, email, phone
-      ) VALUES (
-        ${newUuid},
-        ${userId},
-        ${userName},
-        ${userEmail},
-        ''
-      )
-      ON CONFLICT (user_id) DO UPDATE SET
-        name = EXCLUDED.name,
-        email = EXCLUDED.email
-      RETURNING id
+    // STEP 1: Try to fetch existing profile
+    const existing = await sql`
+      SELECT id FROM profiles WHERE user_id = ${userId} LIMIT 1
     `
 
-    profileId = result.rows[0]?.id
-
-  } catch (error: any) {
-    console.error("Profile upsert failed:", error.message)
-  }
-
-  if (!profileId) {
-    try {
+    if (existing.rows.length > 0) {
+      profileId = existing.rows[0].id
+    } else {
+      // STEP 2: Create new profile with UUID
+      const newUuid = uuidv4()
       const result = await sql`
-        SELECT id FROM profiles WHERE user_id = ${userId}
+        INSERT INTO profiles (id, user_id, name, email, phone, address)
+        VALUES (${newUuid}, ${userId}, ${userName}, ${userEmail}, '', '')
+        RETURNING id
       `
-      profileId = result.rows[0]?.id
-    } catch (error: any) {
-      console.error("Profile fetch failed:", error.message)
+      profileId = result.rows[0].id
     }
+  } catch (error: any) {
+    console.error("[Zakat] Profile setup failed:", error.message)
   }
 
   if (!profileId) {
     return (
       <div className="container mx-auto p-8 text-center">
-        <p className="text-orange-600 font-bold">Unable to set up profile</p>
-        <p className="text-sm text-red-600 mt-4">
-          Please check server logs for error.
+        <p className="text-red-600 font-bold">Failed to set up profile</p>
+        <p className="text-sm text-gray-600 mt-2">
+          Check Vercel logs for details.
         </p>
       </div>
     )
   }
 
+  // FETCH TOTAL
   let totalAmount = 0
   try {
     const result = await sql`
