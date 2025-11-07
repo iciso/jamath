@@ -11,30 +11,31 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const googleId = session.user.id
+    const userId = session.user.id
+    const isGoogle = !userId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
+
+    let dbUserId: string
+    if (isGoogle) {
+      const [user] = await sql`SELECT id FROM users WHERE google_id = ${userId} LIMIT 1`
+      if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 })
+      dbUserId = user.id
+    } else {
+      dbUserId = userId
+    }
+
     const { headId, amount, payment_method, transaction_id, notes } = await req.json()
 
     if (!headId || !amount || amount <= 0 || !payment_method) {
       return NextResponse.json({ error: "Missing or invalid fields" }, { status: 400 })
     }
 
-    // Get user.id from google_id
-    const [user] = await sql`
-      SELECT id FROM users WHERE google_id = ${googleId} LIMIT 1
-    `
-    if (!user) {
-      return NextResponse.json({ error: "User not found. Please complete profile." }, { status: 404 })
-    }
-
-    // Get profile.id from user_id
     const [profile] = await sql`
-      SELECT id FROM profiles WHERE user_id = ${user.id} LIMIT 1
+      SELECT id FROM profiles WHERE user_id = ${dbUserId} LIMIT 1
     `
     if (!profile) {
-      return NextResponse.json({ error: "Profile not complete. Please fill your details." }, { status: 400 })
+      return NextResponse.json({ error: "Profile not complete" }, { status: 400 })
     }
 
-    // Insert donation (status 'pending')
     const [donation] = await sql`
       INSERT INTO donations (
         profile_id, head_id, amount, payment_method, 
@@ -47,7 +48,6 @@ export async function POST(req: Request) {
       RETURNING id, amount, created_at, head_id
     `
 
-    // Fetch head name
     const [head] = await sql`
       SELECT name, is_zakat FROM donation_heads WHERE id = ${headId}
     `
@@ -59,16 +59,13 @@ export async function POST(req: Request) {
       head: head?.name || "Unknown",
       isZakat: head?.is_zakat || false,
       message: head?.is_zakat 
-        ? "Zakat submitted! Waiting for admin verification."
+        ? "Zakat submitted! Awaiting verification."
         : "Donation submitted. JazakAllah khairan."
     })
 
   } catch (err: any) {
     console.error("[API] donation submit error:", err)
-    return NextResponse.json(
-      { error: "Failed to submit donation", details: err.message },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: "Failed to submit donation", details: err.message }, { status: 500 })
   }
 }
 

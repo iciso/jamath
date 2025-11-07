@@ -8,7 +8,7 @@ import { useToast } from "@/hooks/use-toast"
 const fetcher = (url: string) => fetch(url).then(r => r.json())
 
 export function AdminDonationTable() {
-  const { data: donations, mutate, error } = useSWR("/api/admin/donations", fetcher)
+  const { data, error, mutate } = useSWR("/api/admin/donations", fetcher)
   const { toast } = useToast()
 
   const verify = async (id: string, action: "verified" | "rejected") => {
@@ -18,18 +18,18 @@ export function AdminDonationTable() {
         body: JSON.stringify({ donationId: id, action }),
         headers: { "Content-Type": "application/json" }
       })
-      if (!res.ok) throw new Error(await res.json().error)
+      if (!res.ok) throw new Error((await res.json()).error)
 
-      toast({ title: action === "verified" ? "Verified successfully" : "Rejected" })
+      toast({ title: action === "verified" ? "Verified" : "Rejected" })
       mutate()
     } catch (err: any) {
-      toast({ title: "Error", description: err.message || "Failed to update", variant: "destructive" })
+      toast({ title: "Error", description: err.message, variant: "destructive" })
     }
   }
 
-  if (error) return <p className="text-red-600">Failed to load pending donations.</p>
-  if (!donations) return <p>Loading...</p>
-  if (donations.length === 0) return <p>No pending donations.</p>
+  if (error) return <p className="text-red-600">Failed to load: {error.error}</p>
+  if (!data) return <p>Loading...</p>
+  if (!Array.isArray(data) || data.length === 0) return <p>No pending donations.</p>
 
   return (
     <div className="overflow-x-auto">
@@ -44,7 +44,7 @@ export function AdminDonationTable() {
           </tr>
         </thead>
         <tbody>
-          {donations.map((d: any) => (
+          {data.map((d: any) => (
             <tr key={d.id} className="border-b">
               <td>{d.donor_name}</td>
               <td>{d.head_name}</td>
