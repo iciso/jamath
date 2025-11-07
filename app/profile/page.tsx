@@ -9,39 +9,51 @@ export default async function ProfilePage() {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) redirect("/auth/signin")
 
-  const googleId = session.user.id
+  const userId = session.user.id as string
+  const isGoogleLogin = !userId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)  // Check if UUID (password) or string (Google)
   const userName = session.user.name || "Member"
   const userEmail = session.user.email || ""
 
-  // 1. Find or create user in `users` table
-  let userId: string
-  const [user] = await sql`
-    INSERT INTO users (google_id, name, email, role)
-    VALUES (${googleId}, ${userName}, ${userEmail}, 'member')
-    ON CONFLICT (google_id) DO UPDATE SET
-      name = EXCLUDED.name,
-      email = EXCLUDED.email
-    RETURNING id
-  `
-  userId = user.id
+  let dbUserId: string | null = null
 
-  // 2. Sync profile
+  if (isGoogleLogin) {
+    // Google: INSERT/UPDATE users with google_id
+    const [user] = await sql`
+      INSERT INTO users (google_id, name, email, role, password_hash)
+      VALUES (${userId}, ${userName}, ${userEmail}, 'member', NULL)
+      ON CONFLICT (google_id) DO UPDATE SET
+        name = EXCLUDED.name,
+        email = EXCLUDED.email
+      RETURNING id
+    `
+    dbUserId = user.id
+  } else {
+    // Password: Use existing user.id (UUID)
+    dbUserId = userId
+  }
+
+  if (!dbUserId) redirect("/auth/signin")
+
+  // Sync profile
   await sql`
     INSERT INTO profiles (user_id, name, email, phone, gender)
-    VALUES (${userId}, ${userName}, ${userEmail}, '', 'male')
+    VALUES (${dbUserId}, ${userName}, ${userEmail}, '', 'male')
     ON CONFLICT (user_id) DO UPDATE SET
       name = EXCLUDED.name,
       email = EXCLUDED.email
   `
 
-  // 3. Fetch profile
+  // Fetch profile
   const [profile] = await sql`
     SELECT id, name, email, phone, gender
     FROM profiles
-    WHERE user_id = ${userId}
+    WHERE user_id = ${dbUserId}
+    LIMIT 1
   `
 
   if (!profile) redirect("/auth/signin")
+
+  // If complete, go to zakat
   if (profile.phone && profile.gender) redirect("/zakat")
 
   return (
