@@ -12,13 +12,13 @@ export async function POST(req: Request) {
     }
 
     const googleId = session.user.id
-    const { headId, amount, method, transactionId, notes } = await req.json()
+    const { headId, amount, payment_method, transaction_id, notes } = await req.json()
 
-    if (!headId || !amount || amount <= 0 || !method) {
+    if (!headId || !amount || amount <= 0 || !payment_method) {
       return NextResponse.json({ error: "Missing or invalid fields" }, { status: 400 })
     }
 
-    // Step 1: Get user.id (UUID) from google_id
+    // Get user.id from google_id
     const [user] = await sql`
       SELECT id FROM users WHERE google_id = ${googleId} LIMIT 1
     `
@@ -26,7 +26,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "User not found. Please complete profile." }, { status: 404 })
     }
 
-    // Step 2: Get profile.id (UUID) from user_id
+    // Get profile.id from user_id
     const [profile] = await sql`
       SELECT id FROM profiles WHERE user_id = ${user.id} LIMIT 1
     `
@@ -34,20 +34,20 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Profile not complete. Please fill your details." }, { status: 400 })
     }
 
-    // Step 3: Insert donation
+    // Insert donation (status 'pending')
     const [donation] = await sql`
       INSERT INTO donations (
         profile_id, head_id, amount, payment_method, 
         transaction_id, notes, status
       )
       VALUES (
-        ${profile.id}, ${headId}, ${amount}, ${method},
-        ${transactionId || null}, ${notes || null}, 'completed'
+        ${profile.id}, ${headId}, ${amount}, ${payment_method},
+        ${transaction_id || null}, ${notes || null}, 'pending'
       )
       RETURNING id, amount, created_at, head_id
     `
 
-    // Optional: Fetch head name for response
+    // Fetch head name
     const [head] = await sql`
       SELECT name, is_zakat FROM donation_heads WHERE id = ${headId}
     `
@@ -59,8 +59,8 @@ export async function POST(req: Request) {
       head: head?.name || "Unknown",
       isZakat: head?.is_zakat || false,
       message: head?.is_zakat 
-        ? "Zakat accepted! May Allah reward you immensely."
-        : "Donation received. JazakAllah khairan."
+        ? "Zakat submitted! Waiting for admin verification."
+        : "Donation submitted. JazakAllah khairan."
     })
 
   } catch (err: any) {

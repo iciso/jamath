@@ -16,6 +16,7 @@ export async function GET(req: Request) {
       })
     }
 
+    const googleId = session.user.id
     const { searchParams } = new URL(req.url)
     const id = searchParams.get("id")
     if (!id) {
@@ -25,7 +26,19 @@ export async function GET(req: Request) {
       })
     }
 
-    const rows = await sql`
+    // Get user.id from google_id
+    const [user] = await sql`
+      SELECT id FROM users WHERE google_id = ${googleId} LIMIT 1
+    `
+    if (!user) {
+      return new Response(JSON.stringify({ error: "User not found" }), {
+        status: 404,
+        headers: { "Content-Type": "application/json" },
+      })
+    }
+
+    // Fetch donation with ownership check
+    const [donation] = await sql`
       SELECT 
         d.*, 
         h.name as head_name, 
@@ -33,12 +46,13 @@ export async function GET(req: Request) {
       FROM donations d
       JOIN donation_heads h ON h.id = d.head_id
       JOIN profiles p ON p.id = d.profile_id
-      WHERE d.id = ${id} AND d.status = 'verified'
+      WHERE d.id = ${id} 
+        AND d.status = 'verified'
+        AND p.user_id = ${user.id}
     `
 
-    const donation = rows[0]
     if (!donation) {
-      return new Response(JSON.stringify({ error: "Not found or not verified" }), {
+      return new Response(JSON.stringify({ error: "Not found, not verified, or not yours" }), {
         status: 404,
         headers: { "Content-Type": "application/json" },
       })
@@ -55,14 +69,6 @@ export async function GET(req: Request) {
     const { height } = page.getSize()
 
     page.drawText("MANACAUD VALIYAPALLY MUSLIM HANAFI JAMATH", {
-      x: 50,
-      y: height - 50,
-      size: 16,
-      font: fontBold,
-      color: rgb(0, 0.4, 0),
-    })
-
-    page.drawText("DONATION RECEIPT", {
       x: 50,
       y: height - 100,
       size: 20,
@@ -91,7 +97,6 @@ export async function GET(req: Request) {
       font,
     })
 
-    // ← FINAL FIX: Use "INR" instead of "₹"
     page.drawText(`Amount: INR ${amount.toFixed(2)}`, {
       x: 50,
       y: height - 240,

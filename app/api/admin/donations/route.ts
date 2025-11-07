@@ -12,7 +12,6 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const sql = sql()
     const pending = await sql`
       SELECT d.*, h.name as head_name, p.name as donor_name
       FROM donations d
@@ -23,7 +22,7 @@ export async function GET() {
     `
 
     return NextResponse.json(pending)
-  } catch (err) {
+  } catch (err: any) {
     console.error("[API] admin donations error:", err)
     return NextResponse.json({ error: "Failed to fetch" }, { status: 500 })
   }

@@ -28,6 +28,30 @@
 25.	Any other feature that you deem necessary.
 
 
+# Zakat to Receipt Flow
+1.	Logged in as member (Maniraj)
+2.	Went to: https://v0-masjid-community-app.vercel.app/zakat
+3.	Zakat Calculator loads on the one side of page, calculated zakat to be paid.
+4.	Donation Form loads on the other side
+5.	Entered Donation amounts and mode as desired in the form
+6.	Made two donations one by CASH and one by UPI
+7.	Maniraj Logged out
+8.	Logged in and verified the donations as Admin at https://v0-masjid-community-app.vercel.app/admin/zakat
+9.	Admin Logged out
+10.	Maniraj Logged in and went again to https://v0-masjid-community-app.vercel.app/zakat
+11.	Could see both his donations verified
+12.	On clicking the button marked "Receipt" -> PDF downloads automatically.
+
+
+# Files related to Zakat or donations
+1.	app/api/donations/receipt/route.ts
+2.	app/api/donations/route.ts
+3.	app/api/donation-heads/route.ts
+4.	app/api/admin/donations/verify/route.ts
+5.	app/api/admin/donations/route.ts
+6.	components/admin/donations-table.tsx
+7.	app/admin/zakat/pgage.tsx
+
 
 *Automatically synced with your [v0.app](https://v0.app) deployments*
 

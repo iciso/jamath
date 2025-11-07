@@ -17,15 +17,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Invalid action" }, { status: 400 })
     }
 
-    const sql = sql()
     await sql`
       UPDATE donations
       SET status = ${action}, verified_by = ${session.user.id}, verified_at = now()
-      WHERE id = ${donationId}
+      WHERE id = ${donationId} AND status = 'pending'
     `
 
-    return NextResponse.json({ success: true })
-  } catch (err) {
+    return NextResponse.json({ success: true, message: `Donation ${action}!` })
+  } catch (err: any) {
     console.error("[API] verify donation error:", err)
     return NextResponse.json({ error: "Failed to update" }, { status: 500 })
   }
