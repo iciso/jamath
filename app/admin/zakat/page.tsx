@@ -11,24 +11,9 @@ export default async function AdminZakatPage() {
   if (!session?.user?.id) redirect("/auth/signin")
 
   const userId = session.user.id as string
-  const isGoogleLogin = !userId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
 
-  let dbUserId: string | null = null
-  let role = "member"
-
-  if (isGoogleLogin) {
-    const [user] = await sql`SELECT id, role FROM users WHERE google_id = ${userId} LIMIT 1`
-    if (user) {
-      dbUserId = user.id
-      role = user.role
-    }
-  } else {
-    dbUserId = userId
-    const [user] = await sql`SELECT role FROM users WHERE id = ${userId} LIMIT 1`
-    if (user) role = user.role
-  }
-
-  if (role !== "admin") redirect("/zakat")
+  const [user] = await sql`SELECT role FROM users WHERE id = ${userId} LIMIT 1`
+  if (user?.role !== "admin") redirect("/zakat")
 
   return (
     <main className="container mx-auto px-4 py-8">

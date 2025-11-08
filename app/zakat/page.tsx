@@ -13,22 +13,11 @@ export default async function ZakatPage() {
   if (!session?.user?.id) redirect("/auth/signin")
 
   const userId = session.user.id as string
-  const isGoogleLogin = !userId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
 
-  let dbUserId: string | null = null
-  let profile: { id: string; name: string } | null = null
-
-  if (isGoogleLogin) {
-    // Google: Get from google_id
-    const [user] = await sql`SELECT id FROM users WHERE google_id = ${userId} LIMIT 1`
-    if (!user) redirect("/profile")
-    const [prof] = await sql`SELECT id, name FROM profiles WHERE user_id = ${user.id} LIMIT 1`
-    profile = prof
-  } else {
-    // Password: Direct from user.id (UUID)
-    const [prof] = await sql`SELECT id, name FROM profiles WHERE user_id = ${userId} LIMIT 1`
-    profile = prof
-  }
+  // userId is now ALWAYS the DB UUID (from token)
+  const [profile] = await sql`
+    SELECT id, name FROM profiles WHERE user_id = ${userId} LIMIT 1
+  `
 
   if (!profile) redirect("/profile")
 
