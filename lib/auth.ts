@@ -8,8 +8,8 @@ import bcrypt from "bcryptjs"
 export const authOptions = {
   providers: [
     GoogleProvider({
-      clientId: process.env.GOOGLE_ID!,
-      clientSecret: process.env.GOOGLE_SECRET!,
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
     CredentialsProvider({
       name: "Credentials",
@@ -35,7 +35,7 @@ export const authOptions = {
   ],
 
   jwt: {
-    encryption: false,  // DISABLE ENCRYPTION: Signed JWT only (fixes decryption error)
+    encryption: false,  // CRITICAL: Disable JWE encryption → fixes "decryption failed"
   },
 
   callbacks: {
