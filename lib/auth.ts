@@ -23,75 +23,66 @@ export const authOptions = {
         const [user] = await sql`
           SELECT id, name, email, password_hash, role 
           FROM users 
-          WHERE email = ${credentials.email} 
-          LIMIT 1
+          WHERE email = ${credentials.email}
         `
 
         if (!user || !user.password_hash) return null
+        if (!bcrypt.compareSync(credentials.password, user.password_hash)) return null
 
-        const isValid = bcrypt.compareSync(credentials.password, user.password_hash)
-        if (!isValid) return null
-
-        return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-        }
+        return { id: user.id, name: user.name, email: user.email, role: user.role }
       },
     }),
   ],
 
   callbacks: {
     async jwt({ token, user, account, profile }) {
-      // First time login
+      // First login: set from user
       if (user) {
-        token.id = user.id
+        token.dbId = user.id
         token.role = user.role
       }
 
-      // ONLY for Google OAuth
+      // Google login: find or create user by google_id
       if (account?.provider === "google" && profile?.sub) {
         const googleId = profile.sub
         const email = profile.email
         const name = profile.name
 
         const [existing] = await sql`
-          SELECT id, role FROM users WHERE google_id = ${googleId} OR email = ${email}
+          SELECT id, role FROM users 
+          WHERE google_id = ${googleId} OR email = ${email}
         `
 
+        let dbUserId: string
         if (existing) {
-          token.id = existing.id
-          token.role = existing.role
-          // Update name if changed
-          await sql`UPDATE users SET name = ${name} WHERE id = ${existing.id}`
+          dbUserId = existing.id
+          await sql`UPDATE users SET name = ${name} WHERE id = ${dbUserId}`
         } else {
           const [newUser] = await sql`
-            INSERT INTO users (google_id, name, email, role, password_hash)
-            VALUES (${googleId}, ${name}, ${email}, 'member', NULL)
-            RETURNING id, role
+            INSERT INTO users (google_id, name, email, role)
+            VALUES (${googleId}, ${name}, ${email}, 'member')
+            RETURNING id
           `
-          token.id = newUser.id
-          token.role = newUser.role
+          dbUserId = newUser.id
         }
+
+        token.dbId = dbUserId
+        token.role = existing?.role || 'member'
       }
 
       return token
     },
 
     async session({ session, token }) {
-      if (token?.id) {
-        session.user.id = token.id as string
+      if (token?.dbId) {
+        session.user.id = token.dbId as string
         session.user.role = token.role as string
       }
       return session
     },
   },
 
-  pages: {
-    signIn: "/auth/signin",
-  },
-
+  pages: { signIn: "/auth/signin" },
   session: { strategy: "jwt" },
   secret: process.env.NEXTAUTH_SECRET,
 }

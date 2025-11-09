@@ -12,13 +12,11 @@ export default async function ZakatPage() {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) redirect("/auth/signin")
 
-  const userId = session.user.id as string
+  const userId = session.user.id as string  // ALWAYS UUID
 
-  // userId is now ALWAYS the DB UUID (from token)
   const [profile] = await sql`
     SELECT id, name FROM profiles WHERE user_id = ${userId} LIMIT 1
   `
-
   if (!profile) redirect("/profile")
 
   return (
@@ -33,7 +31,6 @@ export default async function ZakatPage() {
           <CardHeader><CardTitle>Zakat Calculator</CardTitle></CardHeader>
           <CardContent><ZakatCalculator /></CardContent>
         </Card>
-
         <Card>
           <CardHeader><CardTitle>Donate Now</CardTitle></CardHeader>
           <CardContent><DonationForm profileId={profile.id} /></CardContent>

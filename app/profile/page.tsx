@@ -9,22 +9,16 @@ export default async function ProfilePage() {
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) redirect("/auth/signin")
 
-  const userId = session.user.id as string
+  const userId = session.user.id as string  // ALWAYS UUID
 
-  // Sync profile (idempotent)
   await sql`
     INSERT INTO profiles (user_id, name, email)
     VALUES (${userId}, ${session.user.name || "Member"}, ${session.user.email || ""})
     ON CONFLICT (user_id) DO UPDATE SET
-      name = EXCLUDED.name,
-      email = EXCLUDED.email
+      name = EXCLUDED.name, email = EXCLUDED.email
   `
 
-  const [profile] = await sql`
-    SELECT id, name, email, phone, gender
-    FROM profiles WHERE user_id = ${userId}
-  `
-
+  const [profile] = await sql`SELECT * FROM profiles WHERE user_id = ${userId}`
   if (!profile) redirect("/auth/signin")
   if (profile.phone && profile.gender) redirect("/zakat")
 

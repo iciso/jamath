@@ -4,69 +4,24 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import { sql } from "@/lib/db"
 
+// Only replace POST
 export async function POST(req: Request) {
-  try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
+  const session = await getServerSession(authOptions)
+  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
 
-    const userId = session.user.id
-    const isGoogle = !userId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/)
+  const userId = session.user.id as string  // ALWAYS UUID
+  const { headId, amount, payment_method, transaction_id, notes } = await req.json()
 
-    let dbUserId: string
-    if (isGoogle) {
-      const [user] = await sql`SELECT id FROM users WHERE google_id = ${userId} LIMIT 1`
-      if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 })
-      dbUserId = user.id
-    } else {
-      dbUserId = userId
-    }
+  const [profile] = await sql`SELECT id FROM profiles WHERE user_id = ${userId} LIMIT 1`
+  if (!profile) return NextResponse.json({ error: "Complete profile" }, { status: 400 })
 
-    const { headId, amount, payment_method, transaction_id, notes } = await req.json()
+  const [donation] = await sql`
+    INSERT INTO donations (profile_id, head_id, amount, payment_method, transaction_id, notes, status)
+    VALUES (${profile.id}, ${headId}, ${amount}, ${payment_method}, ${transaction_id}, ${notes}, 'pending')
+    RETURNING id
+  `
 
-    if (!headId || !amount || amount <= 0 || !payment_method) {
-      return NextResponse.json({ error: "Missing or invalid fields" }, { status: 400 })
-    }
-
-    const [profile] = await sql`
-      SELECT id FROM profiles WHERE user_id = ${dbUserId} LIMIT 1
-    `
-    if (!profile) {
-      return NextResponse.json({ error: "Profile not complete" }, { status: 400 })
-    }
-
-    const [donation] = await sql`
-      INSERT INTO donations (
-        profile_id, head_id, amount, payment_method, 
-        transaction_id, notes, status
-      )
-      VALUES (
-        ${profile.id}, ${headId}, ${amount}, ${payment_method},
-        ${transaction_id || null}, ${notes || null}, 'pending'
-      )
-      RETURNING id, amount, created_at, head_id
-    `
-
-    const [head] = await sql`
-      SELECT name, is_zakat FROM donation_heads WHERE id = ${headId}
-    `
-
-    return NextResponse.json({
-      success: true,
-      donationId: donation.id,
-      amount: donation.amount,
-      head: head?.name || "Unknown",
-      isZakat: head?.is_zakat || false,
-      message: head?.is_zakat 
-        ? "Zakat submitted! Awaiting verification."
-        : "Donation submitted. JazakAllah khairan."
-    })
-
-  } catch (err: any) {
-    console.error("[API] donation submit error:", err)
-    return NextResponse.json({ error: "Failed to submit donation", details: err.message }, { status: 500 })
-  }
+  return NextResponse.json({ success: true, message: "Donation submitted!" })
 }
 
 export async function GET(req: Request) {
