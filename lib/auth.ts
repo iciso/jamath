@@ -35,8 +35,7 @@ export const authOptions = {
   ],
 
   jwt: {
-    encryption: false,  // DISABLE ENCRYPTION: Use signed JWT only
-    signingKey: process.env.NEXTAUTH_SECRET,  // Explicitly use secret for signing
+    encryption: false,  // DISABLE ENCRYPTION: Signed JWT only (fixes decryption error)
   },
 
   callbacks: {
