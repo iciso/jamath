@@ -10,7 +10,7 @@ export const authOptions = {
     }),
   ],
   pages: { signIn: "/signin" },
-  secret: "PtMVsl0yXjXlZHZKiG2yZH0PSusIVK8PY4I0ZkYx5dU=",
+  secret: "x+sA09wQtrPyd74LaFAWx1NstToyCgamncOUb2vkLrI=",
   session: { strategy: "jwt" },
   callbacks: {
     async jwt({ token, user }) {
